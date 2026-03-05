@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Products — Lateh Luxe Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.prod-tbl-img{width:40px;height:40px;background:var(--deep4);border-radius:var(--r);object-fit:cover;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.prod-tbl-img img{width:100%;height:100%;object-fit:cover;}
+.prod-tbl-img svg{width:16px;height:16px;color:var(--gold-d);}
+.prod-name-cell{display:flex;align-items:center;gap:10px;}
+.tbl-actions{display:flex;gap:6px;}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Admin Panel</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">AD</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Administrator</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier">Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni" href="lateh-luxe-admin.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni on" href="lateh-luxe-admin-products.html"><span class="ni-ic" data-icon="products"></span><span class="ni-lb">Products</span></a>
+    <a class="ni" href="lateh-luxe-admin-inventory.html"><span class="ni-ic" data-icon="inventory"></span><span class="ni-lb">Inventory</span></a>
+    <a class="ni" href="lateh-luxe-admin-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">Orders</span></a>
+    <a class="ni" href="lateh-luxe-admin-customers.html"><span class="ni-ic" data-icon="customers"></span><span class="ni-lb">Customers</span></a>
+    <a class="ni" href="lateh-luxe-admin-reviews.html"><span class="ni-ic" data-icon="reviews"></span><span class="ni-lb">Reviews</span></a>
+    <div style="height:1px;background:rgba(201,168,76,.08);margin:6px 14px;"></div>
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="return"></span><span class="ni-lb">Customer View</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Products</div></div>
+    <div class="tb-actions">
+      <button class="btn btn-gold btn-sm" onclick="openModal()"><span data-icon="plus"></span>Add Product</button>
+      <div class="tb-av" id="tbAv">AD</div>
+    </div>
+  </header>
+
+  <div class="pg">
+    <div class="filter-bar">
+      <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-inp" id="searchInp" placeholder="Search products…" oninput="renderTable()"/></div>
+      <select class="filter-sel" id="catFilter" onchange="renderTable()"><option value="">All Categories</option></select>
+      <select class="filter-sel" id="stockFilter" onchange="renderTable()"><option value="">All Stock</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="tbl" id="prodTable">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="prodTbody"><tr><td colspan="6"><div class="page-loader"><div class="spin"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-ov" id="prodModal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-hd">
+      <div class="modal-title" id="modalTitle">Add Product</div>
+      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field" style="grid-column:1/-1;"><label>Product Name</label><input type="text" id="fName" placeholder="e.g. Luxury Hamper Set"/></div>
+        <div class="field"><label>Category</label><input type="text" id="fCat" placeholder="e.g. Hampers"/></div>
+        <div class="field"><label>Price (₦)</label><input type="number" id="fPrice" placeholder="0" min="0"/></div>
+        <div class="field"><label>Original Price (₦) <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="number" id="fOrigPrice" placeholder="0" min="0"/></div>
+        <div class="field"><label>Stock Quantity</label><input type="number" id="fStock" placeholder="0" min="0"/></div>
+        <div class="field" style="grid-column:1/-1;"><label>Description</label><textarea id="fDesc" placeholder="Describe the product…" style="min-height:80px;"></textarea></div>
+        <div class="field"><label>Badge</label>
+          <select id="fBadge"><option value="">None</option><option value="new">New</option><option value="popular">Popular</option><option value="exclusive">Exclusive</option><option value="sale">Sale</option></select>
+        </div>
+        <div class="field"><label>Image URL <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="url" id="fImage" placeholder="https://…"/></div>
+        <div class="field" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="fActive" checked style="width:auto;cursor:pointer;"/>
+          <label for="fActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active (visible to customers)</label>
+        </div>
+      </div>
+      <div class="msg error" id="prodErr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="prodErrTxt"></span></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" id="saveBtn" onclick="saveProduct()"><span id="saveBtnTxt">Save Product</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allProducts=[],editingId=null;
+
+window.addEventListener('load',async()=>{
+  LL.renderIcons();
+  const auth=await LL.requireAuth('admin');
+  if(!auth)return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  await loadProducts();
+});
+
+async function loadProducts(){
+  const{data}=await LL.db.from('items').select('*').order('created_at',{ascending:false});
+  allProducts=data||[];
+  // Populate category filter
+  const cats=[...new Set(allProducts.map(p=>p.category).filter(Boolean))];
+  const catSel=document.getElementById('catFilter');
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
+  renderTable();
+}
+
+function renderTable(){
+  const q=document.getElementById('searchInp').value.trim().toLowerCase();
+  const cat=document.getElementById('catFilter').value;
+  const stock=document.getElementById('stockFilter').value;
+  let prods=allProducts.filter(p=>{
+    const mQ=!q||(p.name||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q);
+    const mC=!cat||p.category===cat;
+    const mS=!stock||(stock==='in'?p.in_stock!==false:p.in_stock===false);
+    return mQ&&mC&&mS;
+  });
+  const tbody=document.getElementById('prodTbody');
+  if(!prods.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty" style="padding:24px;"><div class="empty-sub">No products found.</div></div></td></tr>`;return;}
+  tbody.innerHTML=prods.map(p=>`
+    <tr>
+      <td><div class="prod-name-cell">
+        <div class="prod-tbl-img">${p.image?`<img src="${LL.esc(p.image)}" alt=""/>`:'<span data-icon="gift"></span>'}</div>
+        <div><div style="font-size:.8rem;color:var(--ivory-m);">${LL.esc(p.name)}</div>${p.badge?`<span class="pill pill-pend" style="margin-top:3px;">${p.badge}</span>`:''}</div>
+      </div></td>
+      <td>${LL.esc(p.category||'—')}</td>
+      <td><span style="font-family:'Cinzel',serif;color:var(--gold);">₦${LL.fmt(p.price)}</span>${p.original_price?`<br/><span style="font-size:.64rem;color:var(--ivory-d);text-decoration:line-through;">₦${LL.fmt(p.original_price)}</span>`:''}</td>
+      <td>${p.stock_qty!=null?p.stock_qty:'—'}</td>
+      <td><span class="pill ${p.active!==false?'pill-ok':'pill-cancel'}">${p.active!==false?'Active':'Inactive'}</span></td>
+      <td><div class="tbl-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')"><span data-icon="edit"></span></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><span data-icon="trash"></span></button>
+      </div></td>
+    </tr>`).join('');
+  LL.renderIcons();
+}
+
+function openModal(id){
+  editingId=id||null;
+  const p=id?allProducts.find(x=>x.id===id):null;
+  LL.setTxt('modalTitle',p?'Edit Product':'Add Product');
+  document.getElementById('fName').value=p?.name||'';
+  document.getElementById('fCat').value=p?.category||'';
+  document.getElementById('fPrice').value=p?.price||'';
+  document.getElementById('fOrigPrice').value=p?.original_price||'';
+  document.getElementById('fStock').value=p?.stock_qty!=null?p.stock_qty:'';
+  document.getElementById('fDesc').value=p?.description||'';
+  document.getElementById('fBadge').value=p?.badge||'';
+  document.getElementById('fImage').value=p?.image||'';
+  document.getElementById('fActive').checked=p?.active!==false;
+  document.getElementById('prodErr').className='msg error';
+  document.getElementById('prodModal').classList.add('show');
+}
+function editProduct(id){openModal(id);}
+function closeModal(){document.getElementById('prodModal').classList.remove('show');editingId=null;}
+
+async function saveProduct(){
+  const name=document.getElementById('fName').value.trim();
+  const price=parseFloat(document.getElementById('fPrice').value);
+  if(!name){setErr('Product name is required.');return;}
+  if(!price||isNaN(price)){setErr('Please enter a valid price.');return;}
+
+  const btn=document.getElementById('saveBtn');btn.disabled=true;LL.setTxt('saveBtnTxt','Saving…');
+  const payload={
+    name,
+    category:document.getElementById('fCat').value.trim()||null,
+    price,
+    original_price:parseFloat(document.getElementById('fOrigPrice').value)||null,
+    stock_qty:parseInt(document.getElementById('fStock').value)||0,
+    description:document.getElementById('fDesc').value.trim()||null,
+    badge:document.getElementById('fBadge').value||null,
+    image:document.getElementById('fImage').value.trim()||null,
+    active:document.getElementById('fActive').checked,
+    in_stock:(parseInt(document.getElementById('fStock').value)||0)>0,
+    updated_at:new Date().toISOString(),
+  };
+
+  try{
+    if(editingId){
+      await LL.db.from('items').update(payload).eq('id',editingId);
+      const idx=allProducts.findIndex(p=>p.id===editingId);
+      if(idx>=0)allProducts[idx]={...allProducts[idx],...payload};
+      LL.toast('Product updated','success');
+    }else{
+      payload.created_at=new Date().toISOString();
+      const{data,error}=await LL.db.from('items').insert(payload).select().single();
+      if(error)throw error;
+      allProducts.unshift(data);
+      LL.toast('Product added','success');
+    }
+    closeModal();renderTable();
+  }catch(e){setErr('Save failed: '+e.message);}
+  btn.disabled=false;LL.setTxt('saveBtnTxt','Save Product');
+}
+
+async function deleteProduct(id){
+  if(!confirm('Delete this product? This cannot be undone.'))return;
+  try{
+    await LL.db.from('items').delete().eq('id',id);
+    allProducts=allProducts.filter(p=>p.id!==id);
+    renderTable();LL.toast('Product deleted','info');
+  }catch(e){LL.toast('Delete failed','error');}
+}
+
+function setErr(msg){document.getElementById('prodErrTxt').textContent=msg;document.getElementById('prodErr').className='msg error show';}
+</script>
+</body>
+</html>
