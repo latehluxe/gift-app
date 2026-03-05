@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin Dashboard — Lateh Luxe</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:900px){.admin-grid{grid-template-columns:1fr;}}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(201,168,76,.08);}
+.card-hd-title{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:500;color:var(--ivory-m);}
+.card-hd-title svg{width:13px;height:13px;color:var(--gold);}
+.card-hd-link{font-size:.66rem;letter-spacing:.07em;color:var(--gold-d);transition:color .16s;}
+.card-hd-link:hover{color:var(--gold);}
+.order-row{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.03);gap:10px;cursor:pointer;transition:background .14s;}
+.order-row:last-child{border-bottom:none;}
+.order-row:hover{background:rgba(255,255,255,.02);}
+.or-id{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em;color:var(--gold);}
+.or-name{font-size:.76rem;color:var(--ivory-m);margin-top:1px;}
+.or-date{font-size:.61rem;color:var(--ivory-d);}
+.or-total{font-family:'Cinzel',serif;font-size:.76rem;color:var(--ivory);text-align:right;}
+.activity-row{display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.03);}
+.activity-row:last-child{border-bottom:none;}
+.act-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.act-dot.gold{background:var(--gold);}
+.act-dot.ok{background:var(--ok);}
+.act-dot.info{background:var(--info);}
+.act-dot.warn{background:var(--warn);}
+.act-txt{font-size:.76rem;color:var(--ivory-m);flex:1;line-height:1.4;}
+.act-time{font-size:.62rem;color:var(--ivory-d);flex-shrink:0;}
+</style>
+</head>
+<body>
+<div class="shell">
+<!-- ADMIN SIDEBAR -->
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Admin Panel</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">AD</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Administrator</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier">Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni on" href="lateh-luxe-admin.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-admin-products.html"><span class="ni-ic" data-icon="products"></span><span class="ni-lb">Products</span></a>
+    <a class="ni" href="lateh-luxe-admin-inventory.html"><span class="ni-ic" data-icon="inventory"></span><span class="ni-lb">Inventory</span></a>
+    <a class="ni" href="lateh-luxe-admin-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">Orders</span><span class="nbadge warn" id="pendB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-admin-customers.html"><span class="ni-ic" data-icon="customers"></span><span class="ni-lb">Customers</span></a>
+    <a class="ni" href="lateh-luxe-admin-reviews.html"><span class="ni-ic" data-icon="reviews"></span><span class="ni-lb">Reviews</span></a>
+    <div style="height:1px;background:rgba(201,168,76,.08);margin:6px 14px;"></div>
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="return"></span><span class="ni-lb">Customer View</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Admin Dashboard</div><div class="tb-sub" id="tbDate"></div></div>
+    <div class="tb-actions"><div class="tb-av" id="tbAv">AD</div></div>
+  </header>
+
+  <div class="pg">
+    <!-- KPI ROW -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi"><div class="kpi-ic gold"><span data-icon="analytics"></span></div><div><div class="kpi-val" id="kpiRevenue">—</div><div class="kpi-lb">Total Revenue</div></div></div>
+      <div class="kpi"><div class="kpi-ic blue"><span data-icon="orders"></span></div><div><div class="kpi-val" id="kpiOrders">—</div><div class="kpi-lb">Total Orders</div></div></div>
+      <div class="kpi"><div class="kpi-ic warn"><span data-icon="package"></span></div><div><div class="kpi-val" id="kpiPending">—</div><div class="kpi-lb">Pending Orders</div></div></div>
+      <div class="kpi"><div class="kpi-ic green"><span data-icon="customers"></span></div><div><div class="kpi-val" id="kpiCustomers">—</div><div class="kpi-lb">Customers</div></div></div>
+      <div class="kpi"><div class="kpi-ic red"><span data-icon="products"></span></div><div><div class="kpi-val" id="kpiProducts">—</div><div class="kpi-lb">Products</div></div></div>
+    </div>
+
+    <div class="admin-grid">
+      <!-- RECENT ORDERS -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-title"><span data-icon="orders"></span>Recent Orders</div>
+          <a class="card-hd-link" href="lateh-luxe-admin-orders.html">View all →</a>
+        </div>
+        <div id="recentOrders"><div class="page-loader"><div class="spin"></div></div></div>
+      </div>
+
+      <!-- RECENT ACTIVITY -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-title"><span data-icon="notifications"></span>Recent Activity</div>
+        </div>
+        <div id="activityFeed"><div class="page-loader"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- QUICK ADMIN ACTIONS -->
+    <div class="card card-pad" style="margin-top:16px;">
+      <div class="sec-title" style="font-size:1rem;margin-bottom:14px;">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+        <button class="btn btn-gold" onclick="location.href='lateh-luxe-admin-products.html'"><span data-icon="plus"></span>Add Product</button>
+        <button class="btn btn-outline" onclick="location.href='lateh-luxe-admin-orders.html'"><span data-icon="orders"></span>Manage Orders</button>
+        <button class="btn btn-outline" onclick="location.href='lateh-luxe-admin-inventory.html'"><span data-icon="inventory"></span>Update Inventory</button>
+        <button class="btn btn-outline" onclick="location.href='lateh-luxe-admin-customers.html'"><span data-icon="customers"></span>View Customers</button>
+        <button class="btn btn-outline" onclick="location.href='lateh-luxe-admin-reviews.html'"><span data-icon="reviews"></span>Manage Reviews</button>
+        <a class="btn btn-ghost" href="https://wa.me/2349122834983" target="_blank"><span data-icon="whatsapp"></span>WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+window.addEventListener('load',async()=>{
+  LL.renderIcons();
+  const auth=await LL.requireAuth('admin');
+  if(!auth)return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  LL.setTxt('tbDate',new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}));
+  await loadDashboard();
+});
+
+async function loadDashboard(){
+  try{
+    const[ordersRes,customersRes,productsRes]=await Promise.all([
+      LL.db.from('orders').select('id,created_at,status,total,delivery_name,items'),
+      LL.db.from('profiles').select('id',{count:'exact'}).eq('role','customer'),
+      LL.db.from('items').select('id',{count:'exact'}),
+    ]);
+    const orders=ordersRes.data||[];
+    const pending=orders.filter(o=>o.status==='pending').length;
+    const revenue=orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+(o.total||0),0);
+    LL.setTxt('kpiRevenue','₦'+LL.fmtM(revenue));
+    LL.setTxt('kpiOrders',orders.length);
+    LL.setTxt('kpiPending',pending);
+    LL.setTxt('kpiCustomers',customersRes.count||0);
+    LL.setTxt('kpiProducts',productsRes.count||0);
+    if(pending>0){const pb=document.getElementById('pendB');pb.textContent=pending;pb.style.display='';}
+    renderRecentOrders(orders.slice(0,6));
+    renderActivity(orders.slice(0,5));
+  }catch(e){
+    ['kpiRevenue','kpiOrders','kpiPending','kpiCustomers','kpiProducts'].forEach(id=>LL.setTxt(id,'—'));
+    document.getElementById('recentOrders').innerHTML='<div style="padding:16px;font-size:.74rem;color:var(--ivory-d);">Could not load data. Check Supabase connection.</div>';
+    document.getElementById('activityFeed').innerHTML='';
+  }
+}
+
+function renderRecentOrders(orders){
+  const wrap=document.getElementById('recentOrders');
+  if(!orders.length){wrap.innerHTML='<div class="empty" style="padding:24px;"><div class="empty-sub">No orders yet.</div></div>';return;}
+  wrap.innerHTML=orders.map(o=>`
+    <div class="order-row" onclick="location.href='lateh-luxe-admin-orders.html'">
+      <div><div class="or-id">#${o.id.slice(-6).toUpperCase()}</div><div class="or-name">${LL.esc(o.delivery_name||'Customer')}</div><div class="or-date">${LL.fmtDate(o.created_at)}</div></div>
+      <div><div class="or-total">₦${LL.fmt(o.total)}</div><span class="pill ${pillClass(o.status)}">${o.status}</span></div>
+    </div>`).join('');
+}
+
+function renderActivity(orders){
+  const wrap=document.getElementById('activityFeed');
+  if(!orders.length){wrap.innerHTML='<div class="empty" style="padding:24px;"><div class="empty-sub">No recent activity.</div></div>';return;}
+  const cols={pending:'warn',processing:'info',shipped:'info',delivered:'ok',cancelled:'err'};
+  wrap.innerHTML=orders.map(o=>`
+    <div class="activity-row">
+      <div class="act-dot ${cols[o.status]||'gold'}"></div>
+      <div class="act-txt">Order #${o.id.slice(-6).toUpperCase()} from ${LL.esc(o.delivery_name||'customer')} — <strong>${o.status}</strong></div>
+      <div class="act-time">${LL.timeSince(o.created_at)}</div>
+    </div>`).join('');
+}
+
+function pillClass(s){const m={pending:'pill-pend',processing:'pill-proc',shipped:'pill-ship',delivered:'pill-ok',cancelled:'pill-cancel'};return m[s]||'pill-pend';}
+</script>
+</body>
+</html>
