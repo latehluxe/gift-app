@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Notifications — Lateh Luxe Collections</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.notif-card{background:var(--deep3);border:1px solid rgba(201,168,76,.1);border-radius:var(--r2);padding:14px 16px;display:flex;gap:12px;margin-bottom:10px;transition:border-color .2s;position:relative;}
+.notif-card.unread{border-color:rgba(201,168,76,.22);background:rgba(201,168,76,.03);}
+.notif-ic{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.notif-ic.order{background:rgba(201,168,76,.1);color:var(--gold);}
+.notif-ic.promo{background:rgba(90,158,124,.1);color:var(--ok);}
+.notif-ic.delivery{background:rgba(90,142,201,.1);color:var(--info);}
+.notif-ic.system{background:rgba(201,132,76,.1);color:var(--warn);}
+.notif-ic svg{width:16px;height:16px;}
+.notif-body{flex:1;min-width:0;}
+.notif-title{font-size:.82rem;font-weight:500;color:var(--ivory-m);margin-bottom:2px;}
+.notif-desc{font-size:.74rem;color:var(--ivory-d);line-height:1.5;}
+.notif-time{font-size:.63rem;color:var(--ivory-d);margin-top:5px;}
+.notif-dot{position:absolute;top:10px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--gold);}
+.notif-actions{display:flex;gap:6px;margin-top:8px;}
+.notif-rm{background:none;border:none;color:var(--ivory-d);cursor:pointer;font-size:.68rem;letter-spacing:.06em;padding:3px 8px;border-radius:var(--r);border:1px solid rgba(255,255,255,.07);transition:all .18s;}
+.notif-rm:hover{border-color:rgba(212,89,106,.35);color:var(--err);}
+.notif-hd-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.tab-pills{display:flex;gap:6px;}
+.tab-pill{padding:6px 14px;border-radius:20px;border:1px solid rgba(201,168,76,.18);background:transparent;color:var(--ivory-d);font-size:.68rem;letter-spacing:.06em;cursor:pointer;transition:all .18s;font-family:'Raleway',sans-serif;}
+.tab-pill:hover{border-color:rgba(201,168,76,.35);}
+.tab-pill.active{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold-l);}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Collections</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">LL</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Loading…</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier"></div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-browse.html"><span class="ni-ic" data-icon="browse"></span><span class="ni-lb">Browse Catalogue</span></a>
+    <a class="ni" href="lateh-luxe-cart.html"><span class="ni-ic" data-icon="cart"></span><span class="ni-lb">My Cart</span><span class="nbadge" id="cartB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-wishlist.html"><span class="ni-ic" data-icon="wishlist"></span><span class="ni-lb">Wishlist</span><span class="nbadge" id="wlB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">My Orders</span></a>
+    <a class="ni on" href="lateh-luxe-notifications.html"><span class="ni-ic" data-icon="notifications"></span><span class="ni-lb">Notifications</span><span class="nbadge" id="notifB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-support.html"><span class="ni-ic" data-icon="support"></span><span class="ni-lb">Support</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Notifications</div></div>
+    <div class="tb-actions">
+      <button class="tb-ic" onclick="location.href='lateh-luxe-cart.html'"><span data-icon="cart"></span><span class="tb-dot" id="cDot" style="display:none"></span></button>
+      <div class="tb-av" id="tbAv">LL</div>
+    </div>
+  </header>
+
+  <div class="pg">
+    <div class="notif-hd-bar">
+      <div><div class="sec-title"><em>Notifications</em></div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="tab-pills">
+          <button class="tab-pill active" onclick="setTab('all',this)">All</button>
+          <button class="tab-pill" onclick="setTab('unread',this)">Unread</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="markAllRead()"><span data-icon="check"></span>Mark all read</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearAll()"><span data-icon="trash"></span>Clear all</button>
+      </div>
+    </div>
+    <div id="notifWrap"></div>
+  </div>
+</div>
+</div>
+
+<script>
+let activeTab='all';
+const SEED=[
+  {id:1,title:'Welcome to Lateh Luxe!',desc:'Your account has been created. Start exploring our curated collection of premium gifts.',type:'system',unread:false,time:new Date(Date.now()-86400000*3).toISOString()},
+  {id:2,title:'New Collection Alert',desc:'Our Luxury Hamper range has been updated with fresh festive selections. Check them out now!',type:'promo',unread:false,time:new Date(Date.now()-86400000).toISOString()},
+];
+
+window.addEventListener('load',async()=>{
+  LL.renderIcons();
+  const auth=await LL.requireAuth('customer');
+  if(!auth)return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  // Seed default notifications if empty
+  let notifs=LL.getLocal('ll_notifications')||[];
+  if(!notifs.length){notifs=SEED;LL.setLocal('ll_notifications',notifs);}
+  renderNotifs();
+});
+
+function setTab(tab,el){
+  activeTab=tab;
+  document.querySelectorAll('.tab-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderNotifs();
+}
+
+function renderNotifs(){
+  let notifs=LL.getLocal('ll_notifications')||[];
+  if(activeTab==='unread')notifs=notifs.filter(n=>n.unread);
+  const wrap=document.getElementById('notifWrap');
+  if(!notifs.length){
+    wrap.innerHTML=`<div class="empty"><div class="empty-ic"><span data-icon="notifications"></span></div><div class="empty-title">No notifications</div><div class="empty-sub">${activeTab==='unread'?'You\'re all caught up!':'Nothing here yet — notifications will appear as you use the app.'}</div></div>`;
+    LL.renderIcons();return;
+  }
+  wrap.innerHTML=notifs.map(n=>{
+    const icClass={order:'order',promo:'promo',delivery:'delivery',system:'system'}[n.type]||'system';
+    const icName={order:'orders',promo:'gift',delivery:'truck',system:'info'}[n.type]||'info';
+    return `<div class="notif-card${n.unread?' unread':''}" id="nc-${n.id}">
+      <div class="notif-ic ${icClass}"><span data-icon="${icName}"></span></div>
+      <div class="notif-body">
+        <div class="notif-title">${LL.esc(n.title)}</div>
+        <div class="notif-desc">${LL.esc(n.desc)}</div>
+        <div class="notif-time">${LL.timeSince(n.time)}</div>
+        <div class="notif-actions">
+          ${n.unread?`<button class="notif-rm" onclick="markRead(${n.id})"><span data-icon="check"></span> Mark read</button>`:''}
+          <button class="notif-rm" onclick="removeNotif(${n.id})"><span data-icon="trash"></span> Remove</button>
+        </div>
+      </div>
+      ${n.unread?'<div class="notif-dot"></div>':''}
+    </div>`;
+  }).join('');
+  LL.renderIcons();
+}
+
+function markRead(id){
+  let notifs=LL.getLocal('ll_notifications')||[];
+  const n=notifs.find(x=>x.id===id);if(n)n.unread=false;
+  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();
+}
+
+function markAllRead(){
+  let notifs=(LL.getLocal('ll_notifications')||[]).map(n=>({...n,unread:false}));
+  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();LL.toast('All notifications marked as read','success');
+}
+
+function removeNotif(id){
+  let notifs=(LL.getLocal('ll_notifications')||[]).filter(n=>n.id!==id);
+  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();
+}
+
+function clearAll(){
+  if(!confirm('Clear all notifications?'))return;
+  LL.setLocal('ll_notifications',[]);LL.syncBadges();renderNotifs();LL.toast('Notifications cleared','info');
+}
+</script>
+</body>
+</html>

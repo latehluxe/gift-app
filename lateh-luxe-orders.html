@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Orders — Lateh Luxe Collections</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.order-card{background:var(--deep3);border:1px solid rgba(201,168,76,.1);border-radius:var(--r2);margin-bottom:12px;overflow:hidden;}
+.order-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;gap:12px;flex-wrap:wrap;transition:background .15s;}
+.order-hd:hover{background:rgba(255,255,255,.02);}
+.order-card.open .order-hd{background:rgba(201,168,76,.03);border-bottom:1px solid rgba(201,168,76,.08);}
+.oc-left{display:flex;flex-direction:column;gap:3px;}
+.oc-id{font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.12em;color:var(--gold);}
+.oc-name{font-size:.82rem;color:var(--ivory-m);}
+.oc-date{font-size:.63rem;color:var(--ivory-d);}
+.oc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.oc-total{font-family:'Cinzel',serif;font-size:.86rem;color:var(--ivory);}
+.order-body{display:none;padding:18px;}
+.order-card.open .order-body{display:block;}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:600px){.ob-grid{grid-template-columns:1fr;}}
+.ob-section label{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-d);display:block;margin-bottom:4px;}
+.ob-section p{font-size:.78rem;color:var(--ivory-m);line-height:1.6;}
+.ob-items{margin-bottom:16px;}
+.ob-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.ob-item:last-child{border-bottom:none;}
+.ob-thumb{width:38px;height:38px;background:var(--deep4);border-radius:var(--r);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.ob-thumb img{width:100%;height:100%;object-fit:cover;}
+.ob-thumb svg{width:14px;height:14px;color:var(--gold-d);}
+.ob-iname{font-size:.78rem;color:var(--ivory-m);flex:1;}
+.ob-iqty{font-size:.68rem;color:var(--ivory-d);}
+.ob-iprice{font-family:'Cinzel',serif;font-size:.74rem;color:var(--gold);}
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-step{display:flex;align-items:flex-start;gap:12px;padding-bottom:14px;position:relative;}
+.tl-step:last-child{padding-bottom:0;}
+.tl-step::before{content:'';position:absolute;left:11px;top:24px;bottom:0;width:1px;background:rgba(201,168,76,.12);}
+.tl-step:last-child::before{display:none;}
+.tl-dot{width:23px;height:23px;border-radius:50%;border:1.5px solid rgba(201,168,76,.2);background:var(--deep4);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tl-dot.done{background:rgba(201,168,76,.1);border-color:var(--gold);}
+.tl-dot.done svg{color:var(--gold);}
+.tl-dot.active{background:rgba(90,142,201,.12);border-color:var(--info);animation:tlPulse 2s ease-in-out infinite;}
+.tl-dot.active svg{color:var(--info);}
+.tl-dot svg{width:10px;height:10px;color:rgba(255,255,255,.12);}
+@keyframes tlPulse{0%,100%{box-shadow:0 0 0 0 rgba(90,142,201,.4);}50%{box-shadow:0 0 0 5px rgba(90,142,201,0);}}
+.tl-info{padding-top:2px;}
+.tl-label{font-size:.76rem;color:var(--ivory-m);}
+.tl-time{font-size:.63rem;color:var(--ivory-d);margin-top:1px;}
+.ob-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;border-top:1px solid rgba(201,168,76,.08);}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Collections</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">LL</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Loading…</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier"></div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-browse.html"><span class="ni-ic" data-icon="browse"></span><span class="ni-lb">Browse Catalogue</span></a>
+    <a class="ni" href="lateh-luxe-cart.html"><span class="ni-ic" data-icon="cart"></span><span class="ni-lb">My Cart</span><span class="nbadge" id="cartB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-wishlist.html"><span class="ni-ic" data-icon="wishlist"></span><span class="ni-lb">Wishlist</span><span class="nbadge" id="wlB" style="display:none"></span></a>
+    <a class="ni on" href="lateh-luxe-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">My Orders</span></a>
+    <a class="ni" href="lateh-luxe-notifications.html"><span class="ni-ic" data-icon="notifications"></span><span class="ni-lb">Notifications</span><span class="nbadge" id="notifB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-support.html"><span class="ni-ic" data-icon="support"></span><span class="ni-lb">Support</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">My Orders</div></div>
+    <div class="tb-actions">
+      <button class="tb-ic" onclick="location.href='lateh-luxe-cart.html'"><span data-icon="cart"></span><span class="tb-dot" id="cDot" style="display:none"></span></button>
+      <button class="tb-ic" onclick="location.href='lateh-luxe-notifications.html'"><span data-icon="notifications"></span><span class="tb-dot" id="nDot" style="display:none"></span></button>
+      <div class="tb-av" id="tbAv">LL</div>
+    </div>
+  </header>
+
+  <div class="pg">
+    <div class="sec-hd">
+      <div><div class="sec-title">Order <em>History</em></div><div class="sec-sub">Track and manage all your purchases</div></div>
+    </div>
+    <div class="filter-bar" style="margin-bottom:18px;">
+      <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-inp" id="searchInp" placeholder="Search orders…" oninput="renderOrders()"/></div>
+      <select class="filter-sel" id="statusFilter" onchange="renderOrders()">
+        <option value="all">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="shipped">Shipped</option>
+        <option value="delivered">Delivered</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div id="ordersWrap"><div class="page-loader"><div class="spin"></div><p>Loading orders…</p></div></div>
+  </div>
+</div>
+</div>
+
+<script>
+let allOrders=[];
+const STATUS_STEPS={
+  pending:['pending'],
+  processing:['pending','processing'],
+  shipped:['pending','processing','shipped'],
+  delivered:['pending','processing','shipped','delivered'],
+  cancelled:['cancelled']
+};
+const STEP_LABELS={pending:'Order Placed',processing:'Processing',shipped:'Shipped',delivered:'Delivered',cancelled:'Cancelled'};
+
+window.addEventListener('load',async()=>{
+  LL.renderIcons();
+  const auth=await LL.requireAuth('customer');
+  if(!auth)return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  await loadOrders(auth.u.id);
+});
+
+async function loadOrders(uid){
+  const wrap=document.getElementById('ordersWrap');
+  try{
+    const{data,error}=await LL.db.from('orders').select('*').eq('user_id',uid).order('created_at',{ascending:false});
+    if(error)throw error;
+    allOrders=data||[];
+  }catch(_){allOrders=[];}
+  renderOrders();
+}
+
+function renderOrders(){
+  const wrap=document.getElementById('ordersWrap');
+  const q=document.getElementById('searchInp').value.trim().toLowerCase();
+  const sf=document.getElementById('statusFilter').value;
+  let orders=allOrders.filter(o=>{
+    const matchStatus=sf==='all'||o.status===sf;
+    const matchQ=!q||o.id.toLowerCase().includes(q)||(o.delivery_name||'').toLowerCase().includes(q)||(o.items||[]).some(i=>(i.name||'').toLowerCase().includes(q));
+    return matchStatus&&matchQ;
+  });
+  if(!orders.length){
+    wrap.innerHTML=`<div class="empty"><div class="empty-ic"><span data-icon="orders"></span></div><div class="empty-title">No orders found</div><div class="empty-sub">${allOrders.length?'Try a different filter.':'You haven\'t placed any orders yet.'}</div><button class="btn btn-gold" onclick="location.href='lateh-luxe-browse.html'"><span data-icon="browse"></span>Start Shopping</button></div>`;
+    LL.renderIcons();return;
+  }
+  wrap.innerHTML=orders.map(o=>orderCard(o)).join('');
+  LL.renderIcons();
+}
+
+function orderCard(o){
+  const items=Array.isArray(o.items)?o.items:[];
+  const itemNames=items.map(i=>i.name).join(', ').slice(0,60)||'Order';
+  const steps=['pending','processing','shipped','delivered'];
+  const cancelledSteps=['cancelled'];
+  const isCancelled=o.status==='cancelled';
+  const activeSteps=isCancelled?cancelledSteps:(STATUS_STEPS[o.status]||['pending']);
+
+  const tlHtml=(isCancelled?['cancelled']:steps).map(s=>{
+    const isDone=activeSteps.includes(s)&&s!==o.status&&!isCancelled;
+    const isActive=s===o.status;
+    const dotCls=isDone?'done':isActive?'active':'';
+    const iconName=isDone?'check':isActive?'package':'package';
+    return `<div class="tl-step"><div class="tl-dot ${dotCls}"><span data-icon="${iconName}"></span></div><div class="tl-info"><div class="tl-label">${STEP_LABELS[s]||s}</div>${isActive?`<div class="tl-time">${LL.fmtDate(o.updated_at||o.created_at)}</div>`:''}</div></div>`;
+  }).join('');
+
+  const itemsHtml=items.map(i=>`<div class="ob-item">
+    <div class="ob-thumb">${i.image?`<img src="${LL.esc(i.image)}" alt=""/>`:'<span data-icon="gift"></span>'}</div>
+    <div class="ob-iname">${LL.esc(i.name)}</div>
+    <div class="ob-iqty">× ${i.qty||1}</div>
+    <div class="ob-iprice">₦${LL.fmt(i.price*(i.qty||1))}</div>
+  </div>`).join('');
+
+  const waMsg=`Hi Lateh Luxe! I'm checking on my order #${o.id.slice(-6).toUpperCase()}. Can you give me an update?`;
+
+  return `<div class="order-card" id="oc-${o.id}">
+    <div class="order-hd" onclick="toggleOrder('${o.id}')">
+      <div class="oc-left">
+        <div class="oc-id">#${o.id.slice(-6).toUpperCase()}</div>
+        <div class="oc-name">${LL.esc(itemNames)}</div>
+        <div class="oc-date">${LL.fmtDate(o.created_at)}</div>
+      </div>
+      <div class="oc-right">
+        <div class="oc-total">₦${LL.fmt(o.total)}</div>
+        <span class="pill ${pillClass(o.status)}">${o.status}</span>
+      </div>
+    </div>
+    <div class="order-body">
+      <div class="ob-grid">
+        <div class="ob-section">
+          <label>Delivery Address</label>
+          <p>${LL.esc(o.delivery_name||'—')}<br/>${LL.esc(o.delivery_address||'')}${o.delivery_city?', '+LL.esc(o.delivery_city):''}${o.delivery_state?', '+LL.esc(o.delivery_state):''}</p>
+        </div>
+        <div class="ob-section">
+          <label>Order Tracking</label>
+          <div class="timeline">${tlHtml}</div>
+        </div>
+      </div>
+      <div class="ob-section" style="margin-bottom:14px;"><label>Items Ordered</label><div class="ob-items">${itemsHtml}</div></div>
+      <div class="ob-section" style="margin-bottom:14px;">
+        <label>Payment Summary</label>
+        <p>Subtotal: ₦${LL.fmt(o.total-(o.delivery_fee||0)+(o.discount||0))}<br/>
+        Delivery: ${o.delivery_fee?'₦'+LL.fmt(o.delivery_fee):'Free'}<br/>
+        ${o.discount?'Discount: -₦'+LL.fmt(o.discount)+'<br/>':''}
+        <strong style="color:var(--gold);">Total: ₦${LL.fmt(o.total)}</strong></p>
+      </div>
+      <div class="ob-actions">
+        <a class="btn btn-outline btn-sm btn-wa" href="${LL.waLink(waMsg)}" target="_blank"><span data-icon="whatsapp"></span>WhatsApp Support</a>
+        ${o.status==='pending'?`<button class="btn btn-ghost btn-sm" onclick="cancelOrder('${o.id}')"><span data-icon="x"></span>Cancel Order</button>`:''}
+        ${o.status==='delivered'?`<button class="btn btn-outline btn-sm" onclick="reorder('${o.id}')"><span data-icon="package"></span>Reorder</button>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleOrder(id){
+  document.getElementById('oc-'+id).classList.toggle('open');
+  LL.renderIcons();
+}
+
+function pillClass(s){const m={pending:'pill-pend',processing:'pill-proc',shipped:'pill-ship',delivered:'pill-ok',cancelled:'pill-cancel'};return m[s]||'pill-pend';}
+
+async function cancelOrder(id){
+  if(!confirm('Cancel this order?'))return;
+  try{
+    await LL.db.from('orders').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id);
+    const o=allOrders.find(x=>x.id===id);if(o)o.status='cancelled';
+    renderOrders();LL.toast('Order cancelled','info');
+  }catch(_){LL.toast('Could not cancel order','error');}
+}
+
+function reorder(id){
+  const o=allOrders.find(x=>x.id===id);
+  if(!o||!o.items)return;
+  const cart=LL.getCart();
+  o.items.forEach(i=>{const ex=cart.find(c=>c.id===i.id);if(ex)ex.qty=(ex.qty||1)+(i.qty||1);else cart.push({...i});});
+  LL.saveCart(cart);LL.syncBadges();
+  LL.toast('Items added to cart!','success');
+  setTimeout(()=>location.href='lateh-luxe-cart.html',900);
+}
+</script>
+</body>
+</html>

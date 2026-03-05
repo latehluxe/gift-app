@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reviews — Lateh Luxe Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.review-card{background:var(--deep3);border:1px solid rgba(201,168,76,.1);border-radius:var(--r2);padding:16px 18px;margin-bottom:10px;transition:border-color .18s;}
+.review-card:hover{border-color:rgba(201,168,76,.2);}
+.review-card.pending{border-left:3px solid var(--warn);}
+.review-card.approved{border-left:3px solid var(--ok);}
+.review-card.rejected{border-left:3px solid var(--err);opacity:.7;}
+.rv-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+.rv-user{display:flex;align-items:center;gap:10px;}
+.rv-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold-d),var(--plum-m));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.58rem;color:var(--ivory);flex-shrink:0;}
+.rv-name{font-size:.8rem;color:var(--ivory-m);}
+.rv-product{font-size:.66rem;color:var(--gold-d);margin-top:1px;}
+.rv-stars{display:flex;align-items:center;gap:2px;}
+.rv-stars svg{width:13px;height:13px;}
+.rv-date{font-size:.64rem;color:var(--ivory-d);margin-top:3px;}
+.rv-body{font-size:.78rem;color:var(--ivory-d);line-height:1.7;margin-bottom:12px;}
+.rv-actions{display:flex;gap:8px;align-items:center;}
+.rv-title{font-size:.84rem;font-weight:500;color:var(--ivory-m);margin-bottom:4px;}
+.rating-dist{display:flex;flex-direction:column;gap:6px;}
+.rd-row{display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--ivory-d);}
+.rd-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+.rd-bar{height:100%;background:var(--gold);border-radius:3px;transition:width .4s;}
+.rd-count{min-width:20px;text-align:right;color:var(--ivory-d);}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Admin Panel</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">AD</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Administrator</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier">Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni" href="lateh-luxe-admin.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-admin-products.html"><span class="ni-ic" data-icon="products"></span><span class="ni-lb">Products</span></a>
+    <a class="ni" href="lateh-luxe-admin-inventory.html"><span class="ni-ic" data-icon="inventory"></span><span class="ni-lb">Inventory</span></a>
+    <a class="ni" href="lateh-luxe-admin-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">Orders</span></a>
+    <a class="ni" href="lateh-luxe-admin-customers.html"><span class="ni-ic" data-icon="customers"></span><span class="ni-lb">Customers</span></a>
+    <a class="ni on" href="lateh-luxe-admin-reviews.html"><span class="ni-ic" data-icon="reviews"></span><span class="ni-lb">Reviews</span></a>
+    <div style="height:1px;background:rgba(201,168,76,.08);margin:6px 14px;"></div>
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="return"></span><span class="ni-lb">Customer View</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Reviews</div><div class="tb-sub" id="rvCountLbl">Loading…</div></div>
+    <div class="tb-actions"><div class="tb-av" id="tbAv">AD</div></div>
+  </header>
+
+  <div class="pg">
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start;">
+
+      <!-- LEFT: REVIEW LIST -->
+      <div>
+        <div class="filter-bar" style="margin-bottom:16px;">
+          <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-inp" id="searchInp" placeholder="Search reviews…" oninput="renderReviews()"/></div>
+          <select class="filter-sel" id="statusFilter" onchange="renderReviews()">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select class="filter-sel" id="starFilter" onchange="renderReviews()">
+            <option value="">All Ratings</option>
+            <option value="5">5 Stars</option><option value="4">4 Stars</option>
+            <option value="3">3 Stars</option><option value="2">2 or less</option>
+          </select>
+        </div>
+        <div id="reviewsWrap"><div class="page-loader"><div class="spin"></div><p>Loading reviews…</p></div></div>
+      </div>
+
+      <!-- RIGHT: STATS -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card card-pad">
+          <div class="sec-title" style="font-size:.95rem;margin-bottom:14px;">Rating Overview</div>
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-family:'Cinzel',serif;font-size:2.4rem;color:var(--gold);" id="avgRating">—</div>
+            <div id="avgStars" style="display:flex;justify-content:center;gap:3px;margin:6px 0;"></div>
+            <div style="font-size:.7rem;color:var(--ivory-d);" id="totalRatings">— reviews</div>
+          </div>
+          <div class="rating-dist" id="ratingDist"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="sec-title" style="font-size:.95rem;margin-bottom:12px;">Quick Stats</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:.76rem;"><span style="color:var(--ivory-d);">Pending approval</span><span style="font-family:'Cinzel',serif;color:var(--warn);" id="statPend">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.76rem;"><span style="color:var(--ivory-d);">Approved</span><span style="font-family:'Cinzel',serif;color:var(--ok);" id="statApproved">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.76px;"><span style="color:var(--ivory-d);">Rejected</span><span style="font-family:'Cinzel',serif;color:var(--err);" id="statRejected">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let allReviews = [];
+
+// Sample reviews to display when DB is empty
+const SAMPLE_REVIEWS = [
+  { id: 'r1', user_name: 'Amaka O.', product_name: 'Luxury Hamper Set', rating: 5, comment: 'Absolutely beautiful hamper! Every item was premium quality and the packaging was stunning. My friend loved it.', status: 'approved', created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+  { id: 'r2', user_name: 'Chukwudi A.', product_name: 'Scented Candle Collection', rating: 4, comment: 'Great candles, lovely fragrance. Delivery was a bit slow but the product itself was worth the wait.', status: 'approved', created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
+  { id: 'r3', user_name: 'Funmilayo B.', product_name: 'Perfume Gift Set', rating: 5, comment: 'These fragrances are divine! Gifted to my mum for her birthday and she was over the moon. Will order again.', status: 'pending', created_at: new Date(Date.now() - 3600000 * 4).toISOString() },
+  { id: 'r4', user_name: 'Emeka N.', product_name: 'Gold Jewellery Set', rating: 3, comment: 'Nice item but the necklace clasp felt a little flimsy. The earrings are beautiful though.', status: 'pending', created_at: new Date(Date.now() - 3600000 * 8).toISOString() },
+  { id: 'r5', user_name: 'Tunde K.', product_name: 'Couple\'s Spa Kit', rating: 5, comment: 'Perfect anniversary gift! My wife and I enjoyed the spa night at home. Everything was well curated.', status: 'approved', created_at: new Date(Date.now() - 86400000 * 10).toISOString() },
+];
+
+window.addEventListener('load', async () => {
+  LL.renderIcons();
+  const auth = await LL.requireAuth('admin');
+  if (!auth) return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  await loadReviews();
+});
+
+async function loadReviews() {
+  try {
+    const { data } = await LL.db.from('reviews').select('*, profiles(full_name), items(name)').order('created_at', { ascending: false });
+    allReviews = (data && data.length) ? data.map(r => ({
+      ...r,
+      user_name: r.profiles?.full_name || 'Customer',
+      product_name: r.items?.name || 'Product',
+    })) : SAMPLE_REVIEWS;
+  } catch (_) { allReviews = SAMPLE_REVIEWS; }
+  updateStats();
+  renderReviews();
+}
+
+function updateStats() {
+  const total = allReviews.length;
+  const avg = total ? (allReviews.reduce((s, r) => s + (r.rating || 0), 0) / total).toFixed(1) : '0';
+  LL.setTxt('avgRating', avg);
+  LL.setTxt('totalRatings', `${total} review${total !== 1 ? 's' : ''}`);
+  LL.setTxt('rvCountLbl', `${total} total reviews`);
+  // Stars display
+  const avgN = parseFloat(avg);
+  document.getElementById('avgStars').innerHTML = [1,2,3,4,5].map(i => {
+    const filled = i <= Math.round(avgN);
+    return `<svg width="14" height="14" viewBox="0 0 24 24" fill="${filled ? 'var(--gold)' : 'none'}" stroke="var(--gold)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  }).join('');
+  // Distribution
+  const dist = document.getElementById('ratingDist');
+  const maxCount = Math.max(1, ...[5,4,3,2,1].map(s => allReviews.filter(r => r.rating === s).length));
+  dist.innerHTML = [5,4,3,2,1].map(s => {
+    const count = allReviews.filter(r => r.rating === s).length;
+    const pct = Math.round((count / maxCount) * 100);
+    return `<div class="rd-row">
+      <span>${s}★</span>
+      <div class="rd-bar-wrap"><div class="rd-bar" style="width:${pct}%"></div></div>
+      <span class="rd-count">${count}</span>
+    </div>`;
+  }).join('');
+  // Quick stats
+  LL.setTxt('statPend', allReviews.filter(r => r.status === 'pending').length);
+  LL.setTxt('statApproved', allReviews.filter(r => r.status === 'approved').length);
+  LL.setTxt('statRejected', allReviews.filter(r => r.status === 'rejected').length);
+}
+
+function renderReviews() {
+  const q = document.getElementById('searchInp').value.trim().toLowerCase();
+  const sf = document.getElementById('statusFilter').value;
+  const stars = document.getElementById('starFilter').value;
+  let reviews = allReviews.filter(r => {
+    const mQ = !q || (r.user_name || '').toLowerCase().includes(q) || (r.product_name || '').toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q);
+    const mS = sf === 'all' || r.status === sf;
+    const mR = !stars || (stars === '2' ? r.rating <= 2 : r.rating === parseInt(stars));
+    return mQ && mS && mR;
+  });
+  const wrap = document.getElementById('reviewsWrap');
+  if (!reviews.length) {
+    wrap.innerHTML = `<div class="empty"><div class="empty-ic"><span data-icon="reviews"></span></div><div class="empty-title">No reviews found</div><div class="empty-sub">Reviews from customers will appear here.</div></div>`;
+    LL.renderIcons(); return;
+  }
+  wrap.innerHTML = reviews.map(r => {
+    const stars = [1,2,3,4,5].map(i =>
+      `<svg width="12" height="12" viewBox="0 0 24 24" fill="${i <= r.rating ? 'var(--gold)' : 'none'}" stroke="var(--gold)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`
+    ).join('');
+    const init = LL.toInit(r.user_name || 'U');
+    const statusPill = { pending: 'pill-pend', approved: 'pill-ok', rejected: 'pill-cancel' }[r.status] || 'pill-pend';
+    return `<div class="review-card ${r.status}">
+      <div class="rv-hd">
+        <div class="rv-user">
+          <div class="rv-av">${init}</div>
+          <div>
+            <div class="rv-name">${LL.esc(r.user_name || 'Customer')}</div>
+            <div class="rv-product"><span data-icon="package" style="display:inline-block;width:10px;height:10px;vertical-align:middle;margin-right:3px;"></span>${LL.esc(r.product_name || 'Product')}</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="rv-stars">${stars}</div>
+          <div class="rv-date">${LL.timeSince(r.created_at)}</div>
+          <span class="pill ${statusPill}" style="margin-top:4px;">${r.status}</span>
+        </div>
+      </div>
+      ${r.title ? `<div class="rv-title">${LL.esc(r.title)}</div>` : ''}
+      <div class="rv-body">"${LL.esc(r.comment || '')}"</div>
+      <div class="rv-actions">
+        ${r.status !== 'approved' ? `<button class="btn btn-outline btn-sm" onclick="updateStatus('${r.id}','approved')"><span data-icon="check"></span>Approve</button>` : '<span style="font-size:.68rem;color:var(--ok);display:flex;align-items:center;gap:4px;"><span data-icon="check"></span>Approved</span>'}
+        ${r.status !== 'rejected' ? `<button class="btn btn-danger btn-sm" onclick="updateStatus('${r.id}','rejected')"><span data-icon="x"></span>Reject</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="deleteReview('${r.id}')"><span data-icon="trash"></span></button>
+      </div>
+    </div>`;
+  }).join('');
+  LL.renderIcons();
+}
+
+async function updateStatus(id, status) {
+  // For sample data, update locally
+  const r = allReviews.find(x => x.id === id); if (!r) return;
+  try { await LL.db.from('reviews').update({ status, updated_at: new Date().toISOString() }).eq('id', id); } catch (_) {}
+  r.status = status;
+  updateStats(); renderReviews();
+  LL.toast(`Review ${status}`, status === 'approved' ? 'success' : 'info');
+}
+
+async function deleteReview(id) {
+  if (!confirm('Delete this review permanently?')) return;
+  try { await LL.db.from('reviews').delete().eq('id', id); } catch (_) {}
+  allReviews = allReviews.filter(r => r.id !== id);
+  updateStats(); renderReviews();
+  LL.toast('Review deleted', 'info');
+}
+</script>
+</body>
+</html>

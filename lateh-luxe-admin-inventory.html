@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Inventory — Lateh Luxe Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+<style>
+.stock-bar-wrap{width:80px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;}
+.stock-bar{height:100%;border-radius:3px;transition:width .3s;}
+.stock-bar.high{background:var(--ok);}
+.stock-bar.mid{background:var(--warn);}
+.stock-bar.low{background:var(--err);}
+.qty-inline{display:flex;align-items:center;gap:6px;}
+.qty-adj{width:24px;height:24px;border-radius:50%;border:1px solid rgba(201,168,76,.2);background:transparent;color:var(--ivory-m);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1;}
+.qty-adj:hover{border-color:var(--gold);color:var(--gold);}
+.qty-display{font-family:'Cinzel',serif;font-size:.8rem;color:var(--ivory);min-width:28px;text-align:center;}
+.low-alert{background:rgba(212,89,106,.07);border:1px solid rgba(212,89,106,.2);border-radius:var(--r2);padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:12px;font-size:.78rem;color:#f09090;}
+.low-alert svg{width:16px;height:16px;flex-shrink:0;color:var(--err);}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Admin Panel</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">AD</div>
+    <div class="sb-user-info"><div class="sb-name" id="sbName">Administrator</div><div class="sb-email" id="sbEmail"></div><div class="sb-tier" id="sbTier">Admin</div></div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni" href="lateh-luxe-admin.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-admin-products.html"><span class="ni-ic" data-icon="products"></span><span class="ni-lb">Products</span></a>
+    <a class="ni on" href="lateh-luxe-admin-inventory.html"><span class="ni-ic" data-icon="inventory"></span><span class="ni-lb">Inventory</span></a>
+    <a class="ni" href="lateh-luxe-admin-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">Orders</span></a>
+    <a class="ni" href="lateh-luxe-admin-customers.html"><span class="ni-ic" data-icon="customers"></span><span class="ni-lb">Customers</span></a>
+    <a class="ni" href="lateh-luxe-admin-reviews.html"><span class="ni-ic" data-icon="reviews"></span><span class="ni-lb">Reviews</span></a>
+    <div style="height:1px;background:rgba(201,168,76,.08);margin:6px 14px;"></div>
+    <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="return"></span><span class="ni-lb">Customer View</span></a>
+  </nav>
+  <div class="sb-foot"><button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button></div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Inventory</div><div class="tb-sub">Stock levels &amp; adjustments</div></div>
+    <div class="tb-actions">
+      <button class="btn btn-gold btn-sm" onclick="saveAllChanges()"><span data-icon="check"></span>Save Changes</button>
+      <div class="tb-av" id="tbAv">AD</div>
+    </div>
+  </header>
+
+  <div class="pg">
+    <!-- KPI ROW -->
+    <div class="kpi-row" style="margin-bottom:18px;">
+      <div class="kpi"><div class="kpi-ic gold"><span data-icon="products"></span></div><div><div class="kpi-val" id="kTotal">—</div><div class="kpi-lb">Total Products</div></div></div>
+      <div class="kpi"><div class="kpi-ic green"><span data-icon="check"></span></div><div><div class="kpi-val" id="kInStock">—</div><div class="kpi-lb">In Stock</div></div></div>
+      <div class="kpi"><div class="kpi-ic warn"><span data-icon="alert"></span></div><div><div class="kpi-val" id="kLow">—</div><div class="kpi-lb">Low Stock (≤5)</div></div></div>
+      <div class="kpi"><div class="kpi-ic red"><span data-icon="x"></span></div><div><div class="kpi-val" id="kOut">—</div><div class="kpi-lb">Out of Stock</div></div></div>
+    </div>
+
+    <!-- LOW STOCK ALERT -->
+    <div class="low-alert" id="lowAlert" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span id="lowAlertTxt">Some products are running low on stock.</span>
+    </div>
+
+    <div class="filter-bar">
+      <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-inp" id="searchInp" placeholder="Search products…" oninput="renderTable()"/></div>
+      <select class="filter-sel" id="stockFilter" onchange="renderTable()">
+        <option value="all">All Stock</option>
+        <option value="in">In Stock</option>
+        <option value="low">Low Stock (≤5)</option>
+        <option value="out">Out of Stock</option>
+      </select>
+      <select class="filter-sel" id="catFilter" onchange="renderTable()"><option value="">All Categories</option></select>
+    </div>
+
+    <div class="card">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Current Stock</th><th>Adjust</th><th>Status</th></tr></thead>
+          <tbody id="invTbody"><tr><td colspan="6"><div class="page-loader"><div class="spin"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="font-size:.7rem;color:var(--ivory-d);margin-top:8px;text-align:right;">
+      Use +/− to adjust quantities, then click <strong style="color:var(--gold-l);">Save Changes</strong> to commit all updates at once.
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let allProducts=[], pendingChanges={};
+
+window.addEventListener('load', async () => {
+  LL.renderIcons();
+  const auth = await LL.requireAuth('admin');
+  if (!auth) return;
+  LL.paintUser(auth.u);
+  LL.watchAuth();
+  await loadProducts();
+});
+
+async function loadProducts() {
+  const { data } = await LL.db.from('items').select('*').order('name');
+  allProducts = data || [];
+  const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+  const catSel = document.getElementById('catFilter');
+  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+  updateKPIs();
+  renderTable();
+}
+
+function updateKPIs() {
+  const total = allProducts.length;
+  const inStock = allProducts.filter(p => (p.stock_qty || 0) > 5).length;
+  const low = allProducts.filter(p => (p.stock_qty || 0) > 0 && (p.stock_qty || 0) <= 5).length;
+  const out = allProducts.filter(p => (p.stock_qty || 0) === 0).length;
+  LL.setTxt('kTotal', total); LL.setTxt('kInStock', inStock); LL.setTxt('kLow', low); LL.setTxt('kOut', out);
+  const alert = document.getElementById('lowAlert');
+  if (low > 0 || out > 0) {
+    alert.style.display = '';
+    const names = allProducts.filter(p => (p.stock_qty || 0) <= 5).map(p => p.name).slice(0, 3).join(', ');
+    LL.setTxt('lowAlertTxt', `${low + out} product(s) need restocking: ${names}${low + out > 3 ? '…' : ''}`);
+  } else { alert.style.display = 'none'; }
+}
+
+function renderTable() {
+  const q = document.getElementById('searchInp').value.trim().toLowerCase();
+  const sf = document.getElementById('stockFilter').value;
+  const cat = document.getElementById('catFilter').value;
+  let prods = allProducts.filter(p => {
+    const mQ = !q || (p.name || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q);
+    const mC = !cat || p.category === cat;
+    const qty = getCurrentQty(p.id, p.stock_qty);
+    const mS = sf === 'all' || (sf === 'in' && qty > 5) || (sf === 'low' && qty > 0 && qty <= 5) || (sf === 'out' && qty === 0);
+    return mQ && mC && mS;
+  });
+  const tbody = document.getElementById('invTbody');
+  if (!prods.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty" style="padding:24px;"><div class="empty-sub">No products found.</div></div></td></tr>`; return; }
+  tbody.innerHTML = prods.map(p => {
+    const qty = getCurrentQty(p.id, p.stock_qty);
+    const maxQty = Math.max(qty, 50);
+    const pct = Math.round((qty / maxQty) * 100);
+    const barClass = qty === 0 ? 'low' : qty <= 5 ? 'mid' : 'high';
+    const statusPill = qty === 0 ? 'pill-cancel' : qty <= 5 ? 'pill-pend' : 'pill-ok';
+    const statusTxt = qty === 0 ? 'Out of Stock' : qty <= 5 ? 'Low Stock' : 'In Stock';
+    const isDirty = pendingChanges[p.id] !== undefined;
+    return `<tr id="row-${p.id}" ${isDirty ? 'style="background:rgba(201,168,76,.04);"' : ''}>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:var(--deep4);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+            ${p.image ? `<img src="${LL.esc(p.image)}" alt="" style="width:100%;height:100%;object-fit:cover;"/>` : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.4)" stroke-width="1.5"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/></svg>'}
+          </div>
+          <span style="font-size:.8rem;color:var(--ivory-m);">${LL.esc(p.name)}</span>
+          ${isDirty ? '<span style="font-size:.58rem;color:var(--warn);margin-left:4px;">● unsaved</span>' : ''}
+        </div>
+      </td>
+      <td style="font-size:.74rem;color:var(--ivory-d);">${LL.esc(p.category || '—')}</td>
+      <td style="font-family:\'Cinzel\',serif;font-size:.76rem;color:var(--gold);">₦${LL.fmt(p.price)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="qty-display" id="qty-${p.id}">${qty}</span>
+          <div class="stock-bar-wrap"><div class="stock-bar ${barClass}" style="width:${Math.min(pct,100)}%"></div></div>
+        </div>
+      </td>
+      <td>
+        <div class="qty-inline">
+          <button class="qty-adj" onclick="adjustQty('${p.id}',-1,-${p.stock_qty||0})">−</button>
+          <button class="qty-adj" onclick="adjustQty('${p.id}',1)">+</button>
+          <button class="qty-adj" onclick="adjustQty('${p.id}',5)" title="+5" style="width:30px;font-size:.62rem;border-radius:var(--r);">+5</button>
+          <button class="qty-adj" onclick="adjustQty('${p.id}',10)" title="+10" style="width:32px;font-size:.62rem;border-radius:var(--r);">+10</button>
+        </div>
+      </td>
+      <td><span class="pill ${statusPill}" id="status-${p.id}">${statusTxt}</span></td>
+    </tr>`;
+  }).join('');
+  LL.renderIcons();
+}
+
+function getCurrentQty(id, defaultQty) {
+  return pendingChanges[id] !== undefined ? pendingChanges[id] : (defaultQty || 0);
+}
+
+function adjustQty(id, delta, minDelta = -9999) {
+  const current = getCurrentQty(id, allProducts.find(p => p.id === id)?.stock_qty || 0);
+  const newQty = Math.max(0, current + delta);
+  pendingChanges[id] = newQty;
+  // Update display inline without full re-render
+  const qtyEl = document.getElementById('qty-' + id);
+  const statusEl = document.getElementById('status-' + id);
+  const row = document.getElementById('row-' + id);
+  if (qtyEl) qtyEl.textContent = newQty;
+  if (statusEl) {
+    const sc = newQty === 0 ? 'pill-cancel' : newQty <= 5 ? 'pill-pend' : 'pill-ok';
+    const st = newQty === 0 ? 'Out of Stock' : newQty <= 5 ? 'Low Stock' : 'In Stock';
+    statusEl.className = 'pill ' + sc; statusEl.textContent = st;
+  }
+  if (row) row.style.background = 'rgba(201,168,76,.04)';
+}
+
+async function saveAllChanges() {
+  const ids = Object.keys(pendingChanges);
+  if (!ids.length) { LL.toast('No changes to save', 'info'); return; }
+  const btn = document.querySelector('.topbar .btn-gold');
+  btn.disabled = true;
+  let successCount = 0;
+  await Promise.all(ids.map(async id => {
+    const qty = pendingChanges[id];
+    try {
+      await LL.db.from('items').update({ stock_qty: qty, in_stock: qty > 0, updated_at: new Date().toISOString() }).eq('id', id);
+      const p = allProducts.find(x => x.id === id);
+      if (p) { p.stock_qty = qty; p.in_stock = qty > 0; }
+      successCount++;
+    } catch (_) {}
+  }));
+  pendingChanges = {};
+  updateKPIs();
+  renderTable();
+  btn.disabled = false;
+  LL.toast(`${successCount} product${successCount !== 1 ? 's' : ''} updated successfully`, 'success');
+}
+</script>
+</body>
+</html>
