@@ -84,10 +84,7 @@
 
 <script>
 let activeTab='all';
-const SEED=[
-  {id:1,title:'Welcome to Lateh Luxe!',desc:'Your account has been created. Start exploring our curated collection of premium gifts.',type:'system',unread:false,time:new Date(Date.now()-86400000*3).toISOString()},
-  {id:2,title:'New Collection Alert',desc:'Our Luxury Hamper range has been updated with fresh festive selections. Check them out now!',type:'promo',unread:false,time:new Date(Date.now()-86400000).toISOString()},
-];
+let supabaseNotifs=[];
 
 window.addEventListener('load',async()=>{
   LL.renderIcons();
@@ -95,11 +92,27 @@ window.addEventListener('load',async()=>{
   if(!auth)return;
   LL.paintUser(auth.u);
   LL.watchAuth();
-  // Seed default notifications if empty
-  let notifs=LL.getLocal('ll_notifications')||[];
-  if(!notifs.length){notifs=SEED;LL.setLocal('ll_notifications',notifs);}
-  renderNotifs();
+  await loadNotifs(auth.u.id);
 });
+
+async function loadNotifs(uid){
+  try{
+    // Fetch own notifications + broadcasts (user_id IS NULL)
+    const{data}=await LL.db.from('notifications')
+      .select('*')
+      .or(`user_id.eq.${uid},user_id.is.null`)
+      .order('created_at',{ascending:false});
+    supabaseNotifs=(data||[]).map(n=>({
+      id:n.id, title:n.title, desc:n.body||'', type:n.type||'general',
+      unread:!n.is_read, time:n.created_at
+    }));
+  }catch(_){
+    // Fallback to localStorage
+    supabaseNotifs=LL.getLocal('ll_notifications')||[];
+  }
+  LL.setLocal('ll_notifications',supabaseNotifs);
+  renderNotifs();
+}
 
 function setTab(tab,el){
   activeTab=tab;
@@ -109,7 +122,7 @@ function setTab(tab,el){
 }
 
 function renderNotifs(){
-  let notifs=LL.getLocal('ll_notifications')||[];
+  let notifs=supabaseNotifs||LL.getLocal('ll_notifications')||[];
   if(activeTab==='unread')notifs=notifs.filter(n=>n.unread);
   const wrap=document.getElementById('notifWrap');
   if(!notifs.length){
@@ -136,25 +149,28 @@ function renderNotifs(){
   LL.renderIcons();
 }
 
-function markRead(id){
-  let notifs=LL.getLocal('ll_notifications')||[];
-  const n=notifs.find(x=>x.id===id);if(n)n.unread=false;
-  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();
+async function markRead(id){
+  supabaseNotifs=(supabaseNotifs||[]);
+  const n=supabaseNotifs.find(x=>x.id===id);if(n)n.unread=false;
+  try{await LL.db.from('notifications').update({is_read:true}).eq('id',id);}catch(_){}
+  LL.setLocal('ll_notifications',supabaseNotifs);LL.syncBadges();renderNotifs();
 }
 
-function markAllRead(){
-  let notifs=(LL.getLocal('ll_notifications')||[]).map(n=>({...n,unread:false}));
-  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();LL.toast('All notifications marked as read','success');
+async function markAllRead(){
+  const ids=supabaseNotifs.filter(n=>n.unread).map(n=>n.id);
+  supabaseNotifs=supabaseNotifs.map(n=>({...n,unread:false}));
+  try{if(ids.length)await LL.db.from('notifications').update({is_read:true}).in('id',ids);}catch(_){}
+  LL.setLocal('ll_notifications',supabaseNotifs);LL.syncBadges();renderNotifs();LL.toast('All notifications marked as read','success');
 }
 
 function removeNotif(id){
-  let notifs=(LL.getLocal('ll_notifications')||[]).filter(n=>n.id!==id);
-  LL.setLocal('ll_notifications',notifs);LL.syncBadges();renderNotifs();
+  supabaseNotifs=(supabaseNotifs||[]).filter(n=>n.id!==id);
+  LL.setLocal('ll_notifications',supabaseNotifs);LL.syncBadges();renderNotifs();
 }
 
 function clearAll(){
   if(!confirm('Clear all notifications?'))return;
-  LL.setLocal('ll_notifications',[]);LL.syncBadges();renderNotifs();LL.toast('Notifications cleared','info');
+  supabaseNotifs=[];LL.setLocal('ll_notifications',[]);LL.syncBadges();renderNotifs();LL.toast('Notifications cleared','info');
 }
 </script>
 </body>

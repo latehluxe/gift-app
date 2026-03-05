@@ -2,17 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Products — Lateh Luxe Admin</title>
+<title>Products & Sections — Lateh Luxe Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="ll-core.js"></script>
 <link rel="stylesheet" href="ll-theme.css"/>
 <style>
-.prod-tbl-img{width:40px;height:40px;background:var(--deep4);border-radius:var(--r);object-fit:cover;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+/* TAB BAR */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid rgba(201,168,76,.15);margin-bottom:20px;}
+.tb{padding:10px 20px;background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Raleway',sans-serif;font-size:.76rem;letter-spacing:.08em;color:var(--ivory-d);transition:all .2s;white-space:nowrap;}
+.tb.active{color:var(--gold-l);border-bottom-color:var(--gold);}
+.tb:hover{color:var(--ivory-m);}
+/* SECTION CARDS */
+.sec-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:20px;}
+.sec-card{background:var(--deep3);border:1px solid rgba(201,168,76,.12);border-radius:var(--r2);overflow:hidden;cursor:pointer;transition:all .2s;}
+.sec-card:hover{border-color:rgba(201,168,76,.3);transform:translateY(-2px);}
+.sec-card.active-sec{border-color:var(--gold);background:rgba(201,168,76,.06);}
+.sc-img{height:90px;background:var(--deep4);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.sc-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.sc-img svg{width:28px;height:28px;color:rgba(201,168,76,.3);}
+.sc-body{padding:12px;}
+.sc-name{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:300;color:var(--ivory);}
+.sc-meta{font-size:.66rem;color:var(--ivory-d);margin-top:3px;}
+.sc-actions{display:flex;gap:5px;margin-top:8px;}
+/* CAT CHIPS */
+.cat-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.cc{padding:6px 14px;border-radius:20px;border:1px solid rgba(201,168,76,.2);background:transparent;color:var(--ivory-d);font-size:.68rem;cursor:pointer;transition:all .18s;font-family:'Raleway',sans-serif;}
+.cc.active{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold-l);}
+/* IMAGE UPLOAD */
+.img-upload{border:1.5px dashed rgba(201,168,76,.25);border-radius:var(--r2);padding:20px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+.img-upload:hover{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.03);}
+.img-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.img-preview{width:100%;height:120px;object-fit:contain;border-radius:var(--r);margin-top:8px;display:none;}
+.img-upload-ic svg{width:28px;height:28px;color:var(--gold-d);}
+.img-upload-txt{font-size:.72rem;color:var(--ivory-d);margin-top:6px;}
+.img-upload-hint{font-size:.62rem;color:rgba(250,245,234,.2);margin-top:3px;}
+/* CURATED BOX INCLUDES */
+.includes-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.inc-row{display:flex;gap:6px;}
+.inc-inp{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.14);border-radius:var(--r);color:var(--ivory);padding:7px 10px;font-size:.76rem;outline:none;}
+.inc-rm{width:28px;height:28px;border-radius:50%;border:1px solid rgba(212,89,106,.3);background:transparent;color:var(--err);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.inc-rm svg{width:11px;height:11px;}
+.prod-tbl-img{width:40px;height:40px;background:var(--deep4);border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .prod-tbl-img img{width:100%;height:100%;object-fit:cover;}
-.prod-tbl-img svg{width:16px;height:16px;color:var(--gold-d);}
-.prod-name-cell{display:flex;align-items:center;gap:10px;}
-.tbl-actions{display:flex;gap:6px;}
 </style>
 </head>
 <body>
@@ -33,6 +65,7 @@
     <a class="ni" href="lateh-luxe-admin-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">Orders</span></a>
     <a class="ni" href="lateh-luxe-admin-customers.html"><span class="ni-ic" data-icon="customers"></span><span class="ni-lb">Customers</span></a>
     <a class="ni" href="lateh-luxe-admin-reviews.html"><span class="ni-ic" data-icon="reviews"></span><span class="ni-lb">Reviews</span></a>
+    <a class="ni" href="lateh-luxe-admin-messages.html"><span class="ni-ic" data-icon="support"></span><span class="ni-lb">Messages</span></a>
     <div style="height:1px;background:rgba(201,168,76,.08);margin:6px 14px;"></div>
     <a class="ni" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="return"></span><span class="ni-lb">Customer View</span></a>
   </nav>
@@ -43,185 +76,686 @@
 <div class="main">
   <header class="topbar">
     <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
-    <div class="tb-title"><div class="tb-heading">Products</div></div>
-    <div class="tb-actions">
-      <button class="btn btn-gold btn-sm" onclick="openModal()"><span data-icon="plus"></span>Add Product</button>
-      <div class="tb-av" id="tbAv">AD</div>
-    </div>
+    <div class="tb-title"><div class="tb-heading">Products &amp; Sections</div></div>
+    <div class="tb-actions"><div class="tb-av" id="tbAv">AD</div></div>
   </header>
 
   <div class="pg">
-    <div class="filter-bar">
-      <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="search-inp" id="searchInp" placeholder="Search products…" oninput="renderTable()"/></div>
-      <select class="filter-sel" id="catFilter" onchange="renderTable()"><option value="">All Categories</option></select>
-      <select class="filter-sel" id="stockFilter" onchange="renderTable()"><option value="">All Stock</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select>
+    <!-- MAIN TABS -->
+    <div class="tab-bar">
+      <button class="tb active" onclick="switchTab('sections',this)">Sections &amp; Categories</button>
+      <button class="tb" onclick="switchTab('items',this)">Individual Items</button>
+      <button class="tb" onclick="switchTab('boxes',this)">Curated Boxes</button>
     </div>
-    <div class="card">
-      <div class="tbl-wrap">
-        <table class="tbl" id="prodTable">
-          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="prodTbody"><tr><td colspan="6"><div class="page-loader"><div class="spin"></div></div></td></tr></tbody>
+
+    <!-- ── SECTIONS TAB ── -->
+    <div id="tabSections">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div><div class="sec-title" style="font-size:1rem;">Store <em>Sections</em></div><div class="sec-sub">Top-level categories customers see on the browse page</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-gold btn-sm" onclick="openSectionModal()"><span data-icon="plus"></span>Add Section</button>
+          <button class="btn btn-outline btn-sm" onclick="openCatModal()"><span data-icon="plus"></span>Add Category</button>
+        </div>
+      </div>
+      <div class="sec-cards" id="sectionCards"><div class="page-loader"><div class="spin"></div></div></div>
+
+      <!-- CATEGORY TABLE for selected section -->
+      <div id="catPanel" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div><span style="font-size:.72rem;color:var(--gold-d);">Categories in: </span><span style="font-size:.9rem;color:var(--ivory);" id="activeSectionName">—</span></div>
+          <button class="btn btn-outline btn-sm" onclick="openCatModal()"><span data-icon="plus"></span>Add Category</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="tbl"><thead><tr><th>Category</th><th>Items</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="catTbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ITEMS TAB ── -->
+    <div id="tabItems" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div><div class="sec-title" style="font-size:1rem;">Individual <em>Items</em></div></div>
+        <button class="btn btn-gold btn-sm" onclick="openItemModal()"><span data-icon="plus"></span>Add Item</button>
+      </div>
+      <div class="filter-bar">
+        <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-inp" id="itemSearch" placeholder="Search items…" oninput="renderItems()"/></div>
+        <select class="filter-sel" id="itemCatFilter" onchange="renderItems()"><option value="">All Categories</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table class="tbl"><thead><tr><th>Item</th><th>Section / Category</th><th>Price</th><th>Stock</th><th>Box Item</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="itemTbody"><tr><td colspan="7"><div class="page-loader"><div class="spin"></div></div></td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ── CURATED BOXES TAB ── -->
+    <div id="tabBoxes" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div><div class="sec-title" style="font-size:1rem;">Curated <em>Boxes</em></div><div class="sec-sub">Ready-made gift boxes customers can order directly</div></div>
+        <button class="btn btn-gold btn-sm" onclick="openBoxModal()"><span data-icon="plus"></span>Add Curated Box</button>
+      </div>
+      <div id="boxesGrid"><div class="page-loader"><div class="spin"></div></div></div>
     </div>
   </div>
 </div>
 </div>
 
-<!-- ADD/EDIT MODAL -->
-<div class="modal-ov" id="prodModal">
-  <div class="modal" style="max-width:540px;">
-    <div class="modal-hd">
-      <div class="modal-title" id="modalTitle">Add Product</div>
-      <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
+<!-- SECTION MODAL -->
+<div class="modal-ov" id="sectionModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hd"><div class="modal-title" id="secModalTitle">Add Section</div>
+      <button class="modal-close" onclick="closeSectionModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="field" style="grid-column:1/-1;"><label>Product Name</label><input type="text" id="fName" placeholder="e.g. Luxury Hamper Set"/></div>
-        <div class="field"><label>Category</label><input type="text" id="fCat" placeholder="e.g. Hampers"/></div>
-        <div class="field"><label>Price (₦)</label><input type="number" id="fPrice" placeholder="0" min="0"/></div>
-        <div class="field"><label>Original Price (₦) <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="number" id="fOrigPrice" placeholder="0" min="0"/></div>
-        <div class="field"><label>Stock Quantity</label><input type="number" id="fStock" placeholder="0" min="0"/></div>
-        <div class="field" style="grid-column:1/-1;"><label>Description</label><textarea id="fDesc" placeholder="Describe the product…" style="min-height:80px;"></textarea></div>
-        <div class="field"><label>Badge</label>
-          <select id="fBadge"><option value="">None</option><option value="new">New</option><option value="popular">Popular</option><option value="exclusive">Exclusive</option><option value="sale">Sale</option></select>
+      <div class="field"><label>Section Name</label><input type="text" id="secName" placeholder="e.g. Curated Boxes"/></div>
+      <div class="field"><label>Description <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="text" id="secDesc" placeholder="Short description shown to customers"/></div>
+      <div class="field"><label>Cover Image</label>
+        <div class="img-upload" id="secImgUpload">
+          <input type="file" accept="image/*" onchange="previewImage(this,'secPreview','secImgUrl')"/>
+          <div class="img-upload-ic"><span data-icon="upload"></span></div>
+          <div class="img-upload-txt">Click to upload image</div>
+          <div class="img-upload-hint">JPG, PNG, WEBP · Max 5MB</div>
+          <img class="img-preview" id="secPreview" alt=""/>
         </div>
-        <div class="field"><label>Image URL <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="url" id="fImage" placeholder="https://…"/></div>
-        <div class="field" style="grid-column:1/-1;display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" id="fActive" checked style="width:auto;cursor:pointer;"/>
-          <label for="fActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active (visible to customers)</label>
-        </div>
+        <input type="hidden" id="secImgUrl"/>
       </div>
-      <div class="msg error" id="prodErr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="prodErrTxt"></span></div>
+      <div class="field" style="flex-direction:row;align-items:center;gap:10px;">
+        <input type="checkbox" id="secActive" checked style="width:auto;"/>
+        <label for="secActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active (visible to customers)</label>
+      </div>
+      <div class="msg error" id="secErr" style="display:none;"></div>
     </div>
     <div class="modal-ft">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-gold" id="saveBtn" onclick="saveProduct()"><span id="saveBtnTxt">Save Product</span></button>
+      <button class="btn btn-ghost" onclick="closeSectionModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveSection()"><span id="secSaveTxt">Save Section</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-ov" id="catModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hd"><div class="modal-title" id="catModalTitle">Add Category</div>
+      <button class="modal-close" onclick="closeCatModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="field"><label>Parent Section</label>
+        <select id="catSection"><option value="">Select section…</option></select></div>
+      <div class="field"><label>Category Name</label><input type="text" id="catName" placeholder="e.g. Money Tower"/></div>
+      <div class="field"><label>Description <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="text" id="catDesc" placeholder="Short description"/></div>
+      <div class="field"><label>Cover Image</label>
+        <div class="img-upload">
+          <input type="file" accept="image/*" onchange="previewImage(this,'catPreview','catImgUrl')"/>
+          <div class="img-upload-ic"><span data-icon="upload"></span></div>
+          <div class="img-upload-txt">Click to upload image</div>
+          <div class="img-upload-hint">JPG, PNG, WEBP · Max 5MB</div>
+          <img class="img-preview" id="catPreview" alt=""/>
+        </div>
+        <input type="hidden" id="catImgUrl"/>
+      </div>
+      <div class="field" style="flex-direction:row;align-items:center;gap:10px;">
+        <input type="checkbox" id="catActive" checked style="width:auto;"/>
+        <label for="catActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active</label>
+      </div>
+      <div class="msg error" id="catErr" style="display:none;"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeCatModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCategory()"><span id="catSaveTxt">Save Category</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-ov" id="itemModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd"><div class="modal-title" id="itemModalTitle">Add Item</div>
+      <button class="modal-close" onclick="closeItemModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field" style="grid-column:1/-1;"><label>Item Name</label><input type="text" id="iName" placeholder="e.g. Premium Hat"/></div>
+        <div class="field"><label>Section</label>
+          <select id="iSection" onchange="loadCatsForSection()"><option value="">Select section…</option></select></div>
+        <div class="field"><label>Category</label>
+          <select id="iCat"><option value="">Select category…</option></select></div>
+        <div class="field"><label>Price (₦)</label><input type="number" id="iPrice" placeholder="0" min="0"/></div>
+        <div class="field"><label>Original Price (₦) <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="number" id="iOrigPrice" placeholder="0"/></div>
+        <div class="field"><label>Stock Quantity</label><input type="number" id="iStock" placeholder="0" min="0"/></div>
+        <div class="field"><label>Badge</label>
+          <select id="iBadge"><option value="">None</option><option value="new">New</option><option value="popular">Popular</option><option value="exclusive">Exclusive</option><option value="sale">Sale</option></select></div>
+        <div class="field" style="grid-column:1/-1;"><label>Description</label><textarea id="iDesc" placeholder="Describe this item…" style="min-height:70px;"></textarea></div>
+        <div class="field" style="grid-column:1/-1;"><label>Product Image</label>
+          <div class="img-upload">
+            <input type="file" accept="image/*" onchange="previewImage(this,'iImgPreview','iImgUrl')"/>
+            <div class="img-upload-ic"><span data-icon="upload"></span></div>
+            <div class="img-upload-txt">Click to upload product image</div>
+            <div class="img-upload-hint">JPG, PNG, WEBP · Max 5MB · Recommended 600×600px</div>
+            <img class="img-preview" id="iImgPreview" alt=""/>
+          </div>
+          <input type="hidden" id="iImgUrl"/>
+        </div>
+        <div class="field" style="flex-direction:row;align-items:center;gap:10px;">
+          <input type="checkbox" id="iActive" checked style="width:auto;"/>
+          <label for="iActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active</label>
+        </div>
+        <div class="field" style="flex-direction:row;align-items:center;gap:10px;">
+          <input type="checkbox" id="iBoxItem" style="width:auto;"/>
+          <label for="iBoxItem" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Available for Custom Box</label>
+        </div>
+      </div>
+      <div class="msg error" id="itemErr" style="display:none;"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeItemModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveItem()"><span id="itemSaveTxt">Save Item</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- CURATED BOX MODAL -->
+<div class="modal-ov" id="boxModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hd"><div class="modal-title" id="boxModalTitle">Add Curated Box</div>
+      <button class="modal-close" onclick="closeBoxModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field" style="grid-column:1/-1;"><label>Box Name</label><input type="text" id="bName" placeholder="e.g. Blossom Box"/></div>
+        <div class="field" style="grid-column:1/-1;"><label>Category (under Curated Boxes)</label>
+          <select id="bCat"><option value="">Select…</option></select></div>
+        <div class="field"><label>Price (₦)</label><input type="number" id="bPrice" placeholder="0" min="0"/></div>
+        <div class="field"><label>Original Price <span style="font-size:.58rem;color:var(--ivory-d);">optional</span></label><input type="number" id="bOrigPrice" placeholder="0"/></div>
+        <div class="field"><label>Stock Quantity</label><input type="number" id="bStock" placeholder="0"/></div>
+        <div class="field"><label>Badge</label>
+          <select id="bBadge"><option value="">None</option><option value="new">New</option><option value="popular">Popular</option><option value="exclusive">Exclusive</option><option value="sale">Sale</option></select></div>
+        <div class="field" style="grid-column:1/-1;"><label>Description</label><textarea id="bDesc" placeholder="What makes this box special…" style="min-height:70px;"></textarea></div>
+        <div class="field" style="grid-column:1/-1;"><label>What's Included <span style="font-size:.58rem;color:var(--ivory-d);">(add each item separately)</span></label>
+          <div class="includes-list" id="includesList"></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="addIncludeRow()"><span data-icon="plus"></span>Add Item</button>
+        </div>
+        <div class="field" style="grid-column:1/-1;"><label>Box Image</label>
+          <div class="img-upload">
+            <input type="file" accept="image/*" onchange="previewImage(this,'bImgPreview','bImgUrl')"/>
+            <div class="img-upload-ic"><span data-icon="upload"></span></div>
+            <div class="img-upload-txt">Click to upload box image</div>
+            <div class="img-upload-hint">JPG, PNG, WEBP · Max 5MB</div>
+            <img class="img-preview" id="bImgPreview" alt=""/>
+          </div>
+          <input type="hidden" id="bImgUrl"/>
+        </div>
+        <div class="field" style="flex-direction:row;align-items:center;gap:10px;">
+          <input type="checkbox" id="bActive" checked style="width:auto;"/>
+          <label for="bActive" style="text-transform:none;font-size:.76rem;color:var(--ivory-m);cursor:pointer;">Active</label>
+        </div>
+      </div>
+      <div class="msg error" id="boxErr" style="display:none;"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeBoxModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveBox()"><span id="boxSaveTxt">Save Box</span></button>
     </div>
   </div>
 </div>
 
 <script>
-let allProducts=[],editingId=null;
+const BUCKET = 'lateh-luxe-images';
+let sections=[], categories=[], items=[], boxes=[], activeSectionId=null;
+let editingSec=null, editingCat=null, editingItem=null, editingBox=null;
+let uploadFiles = {}; // key→File object
 
-window.addEventListener('load',async()=>{
+window.addEventListener('load', async () => {
   LL.renderIcons();
-  const auth=await LL.requireAuth('admin');
-  if(!auth)return;
+  const auth = await LL.requireAuth('admin');
+  if (!auth) return;
   LL.paintUser(auth.u);
   LL.watchAuth();
-  await loadProducts();
+  await loadAll();
 });
 
-async function loadProducts(){
-  const{data}=await LL.db.from('items').select('*').order('created_at',{ascending:false});
-  allProducts=data||[];
-  // Populate category filter
-  const cats=[...new Set(allProducts.map(p=>p.category).filter(Boolean))];
-  const catSel=document.getElementById('catFilter');
-  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
-  renderTable();
+async function loadAll() {
+  const [secRes, catRes, itemRes, boxRes] = await Promise.all([
+    LL.db.from('sections').select('*').order('sort_order'),
+    LL.db.from('categories').select('*').order('sort_order'),
+    LL.db.from('items').select('*').order('created_at', {ascending:false}),
+    LL.db.from('curated_boxes').select('*').order('created_at', {ascending:false}),
+  ]);
+  sections = secRes.data || [];
+  categories = catRes.data || [];
+  items = itemRes.data || [];
+  boxes = boxRes.data || [];
+  renderSections();
+  renderItems();
+  renderBoxes();
+  populateSelects();
 }
 
-function renderTable(){
-  const q=document.getElementById('searchInp').value.trim().toLowerCase();
-  const cat=document.getElementById('catFilter').value;
-  const stock=document.getElementById('stockFilter').value;
-  let prods=allProducts.filter(p=>{
-    const mQ=!q||(p.name||'').toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q);
-    const mC=!cat||p.category===cat;
-    const mS=!stock||(stock==='in'?p.in_stock!==false:p.in_stock===false);
-    return mQ&&mC&&mS;
-  });
-  const tbody=document.getElementById('prodTbody');
-  if(!prods.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty" style="padding:24px;"><div class="empty-sub">No products found.</div></div></td></tr>`;return;}
-  tbody.innerHTML=prods.map(p=>`
-    <tr>
-      <td><div class="prod-name-cell">
-        <div class="prod-tbl-img">${p.image?`<img src="${LL.esc(p.image)}" alt=""/>`:'<span data-icon="gift"></span>'}</div>
-        <div><div style="font-size:.8rem;color:var(--ivory-m);">${LL.esc(p.name)}</div>${p.badge?`<span class="pill pill-pend" style="margin-top:3px;">${p.badge}</span>`:''}</div>
-      </div></td>
-      <td>${LL.esc(p.category||'—')}</td>
-      <td><span style="font-family:'Cinzel',serif;color:var(--gold);">₦${LL.fmt(p.price)}</span>${p.original_price?`<br/><span style="font-size:.64rem;color:var(--ivory-d);text-decoration:line-through;">₦${LL.fmt(p.original_price)}</span>`:''}</td>
-      <td>${p.stock_qty!=null?p.stock_qty:'—'}</td>
-      <td><span class="pill ${p.active!==false?'pill-ok':'pill-cancel'}">${p.active!==false?'Active':'Inactive'}</span></td>
-      <td><div class="tbl-actions">
-        <button class="btn btn-ghost btn-sm" onclick="editProduct('${p.id}')"><span data-icon="edit"></span></button>
-        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><span data-icon="trash"></span></button>
-      </div></td>
-    </tr>`).join('');
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────
+function switchTab(tab, el) {
+  ['tabSections','tabItems','tabBoxes'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.querySelectorAll('.tab-bar .tb').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = '';
+  el.classList.add('active');
   LL.renderIcons();
 }
 
-function openModal(id){
-  editingId=id||null;
-  const p=id?allProducts.find(x=>x.id===id):null;
-  LL.setTxt('modalTitle',p?'Edit Product':'Add Product');
-  document.getElementById('fName').value=p?.name||'';
-  document.getElementById('fCat').value=p?.category||'';
-  document.getElementById('fPrice').value=p?.price||'';
-  document.getElementById('fOrigPrice').value=p?.original_price||'';
-  document.getElementById('fStock').value=p?.stock_qty!=null?p.stock_qty:'';
-  document.getElementById('fDesc').value=p?.description||'';
-  document.getElementById('fBadge').value=p?.badge||'';
-  document.getElementById('fImage').value=p?.image||'';
-  document.getElementById('fActive').checked=p?.active!==false;
-  document.getElementById('prodErr').className='msg error';
-  document.getElementById('prodModal').classList.add('show');
+// ── SECTIONS ─────────────────────────────────────────────────────────────
+function renderSections() {
+  const wrap = document.getElementById('sectionCards');
+  if (!sections.length) { wrap.innerHTML = '<div class="empty" style="padding:24px;"><div class="empty-sub">No sections yet. Add one to get started.</div></div>'; return; }
+  wrap.innerHTML = sections.map(s => {
+    const catCount = categories.filter(c => c.section_id === s.id).length;
+    return `<div class="sec-card ${activeSectionId===s.id?'active-sec':''}" onclick="selectSection('${s.id}')">
+      <div class="sc-img">${s.cover_url ? `<img src="${LL.esc(s.cover_url)}" alt=""/>` : '<span data-icon="browse"></span>'}</div>
+      <div class="sc-body">
+        <div class="sc-name">${LL.esc(s.name)}</div>
+        <div class="sc-meta">${catCount} categor${catCount!==1?'ies':'y'} · ${s.is_active?'Active':'Hidden'}</div>
+        <div class="sc-actions">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editSection('${s.id}')"><span data-icon="edit"></span></button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteSection('${s.id}')"><span data-icon="trash"></span></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  LL.renderIcons();
 }
-function editProduct(id){openModal(id);}
-function closeModal(){document.getElementById('prodModal').classList.remove('show');editingId=null;}
 
-async function saveProduct(){
-  const name=document.getElementById('fName').value.trim();
-  const price=parseFloat(document.getElementById('fPrice').value);
-  if(!name){setErr('Product name is required.');return;}
-  if(!price||isNaN(price)){setErr('Please enter a valid price.');return;}
+function selectSection(id) {
+  activeSectionId = id;
+  renderSections();
+  const s = sections.find(x => x.id === id);
+  LL.setTxt('activeSectionName', s?.name || '');
+  document.getElementById('catPanel').style.display = '';
+  renderCatTable(id);
+}
 
-  const btn=document.getElementById('saveBtn');btn.disabled=true;LL.setTxt('saveBtnTxt','Saving…');
-  const payload={
-    name,
-    category:document.getElementById('fCat').value.trim()||null,
-    price,
-    original_price:parseFloat(document.getElementById('fOrigPrice').value)||null,
-    stock_qty:parseInt(document.getElementById('fStock').value)||0,
-    description:document.getElementById('fDesc').value.trim()||null,
-    badge:document.getElementById('fBadge').value||null,
-    image:document.getElementById('fImage').value.trim()||null,
-    active:document.getElementById('fActive').checked,
-    in_stock:(parseInt(document.getElementById('fStock').value)||0)>0,
-    updated_at:new Date().toISOString(),
+function renderCatTable(sectionId) {
+  const cats = categories.filter(c => c.section_id === sectionId);
+  const tbody = document.getElementById('catTbody');
+  if (!cats.length) { tbody.innerHTML = `<tr><td colspan="4"><div style="padding:16px;font-size:.74rem;color:var(--ivory-d);">No categories in this section yet.</div></td></tr>`; return; }
+  tbody.innerHTML = cats.map(c => {
+    const itemCount = items.filter(i => i.category_id === c.id).length;
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px;">${c.cover_url?`<img src="${LL.esc(c.cover_url)}" style="width:36px;height:36px;border-radius:var(--r);object-fit:cover;"/>` : '<div style="width:36px;height:36px;background:var(--deep4);border-radius:var(--r);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.4)" stroke-width="1.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>'}
+        <span style="font-size:.8rem;color:var(--ivory-m);">${LL.esc(c.name)}</span></div></td>
+      <td style="font-size:.74rem;color:var(--ivory-d);">${itemCount} item${itemCount!==1?'s':''}</td>
+      <td><span class="pill ${c.is_active?'pill-ok':'pill-cancel'}">${c.is_active?'Active':'Hidden'}</span></td>
+      <td><div style="display:flex;gap:5px;">
+        <button class="btn btn-ghost btn-sm" onclick="editCategory('${c.id}')"><span data-icon="edit"></span></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCategory('${c.id}')"><span data-icon="trash"></span></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  LL.renderIcons();
+}
+
+// ── ITEMS ──────────────────────────────────────────────────────────────────
+function renderItems() {
+  const q = (document.getElementById('itemSearch')?.value||'').trim().toLowerCase();
+  const cf = document.getElementById('itemCatFilter')?.value||'';
+  let prods = items.filter(p => {
+    const mQ = !q || (p.name||'').toLowerCase().includes(q);
+    const mC = !cf || p.category_id === cf;
+    return mQ && mC;
+  });
+  const tbody = document.getElementById('itemTbody');
+  if (!prods.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty" style="padding:24px;"><div class="empty-sub">No items found.</div></div></td></tr>`; LL.renderIcons(); return; }
+  tbody.innerHTML = prods.map(p => {
+    const cat = categories.find(c => c.id === p.category_id);
+    const sec = sections.find(s => s.id === (cat?.section_id || p.section_id));
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:10px;">
+        <div class="prod-tbl-img">${p.image_url ? `<img src="${LL.esc(p.image_url)}" alt=""/>` : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.35)" stroke-width="1.5"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/></svg>'}</div>
+        <div><div style="font-size:.78rem;color:var(--ivory-m);">${LL.esc(p.name)}</div>${p.badge?`<span class="pill pill-pend" style="margin-top:2px;font-size:.52rem;">${p.badge}</span>`:''}</div>
+      </div></td>
+      <td style="font-size:.72rem;color:var(--ivory-d);">${sec?LL.esc(sec.name):'—'}<br/>${cat?LL.esc(cat.name):'—'}</td>
+      <td style="font-family:'Cinzel',serif;font-size:.76rem;color:var(--gold);">₦${LL.fmt(p.price)}</td>
+      <td style="font-size:.76rem;color:${(p.stock_qty||0)<=0?'var(--err)':(p.stock_qty||0)<=5?'var(--warn)':'var(--ivory-d)'};">${p.stock_qty||0}</td>
+      <td><span class="pill ${p.is_box_item?'pill-ok':'pill-cancel'}">${p.is_box_item?'Yes':'No'}</span></td>
+      <td><span class="pill ${p.is_active?'pill-ok':'pill-cancel'}">${p.is_active?'Active':'Hidden'}</span></td>
+      <td><div style="display:flex;gap:5px;">
+        <button class="btn btn-ghost btn-sm" onclick="editItem('${p.id}')"><span data-icon="edit"></span></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('${p.id}')"><span data-icon="trash"></span></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  LL.renderIcons();
+}
+
+// ── CURATED BOXES ──────────────────────────────────────────────────────────
+function renderBoxes() {
+  const wrap = document.getElementById('boxesGrid');
+  if (!boxes.length) { wrap.innerHTML = '<div class="empty"><div class="empty-ic"><span data-icon="gift"></span></div><div class="empty-title">No curated boxes yet</div><div class="empty-sub">Add your first box using the button above.</div></div>'; LL.renderIcons(); return; }
+  wrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">${boxes.map(b => `
+    <div style="background:var(--deep3);border:1px solid rgba(201,168,76,.12);border-radius:var(--r2);overflow:hidden;">
+      <div style="height:120px;background:var(--deep4);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+        ${b.image_url?`<img src="${LL.esc(b.image_url)}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" alt=""/>`:'<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.3)" stroke-width="1.2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>'}
+        <span class="pill ${b.is_active?'pill-ok':'pill-cancel'}" style="position:absolute;top:8px;left:8px;">${b.is_active?'Active':'Hidden'}</span>
+      </div>
+      <div style="padding:13px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--ivory);">${LL.esc(b.name)}</div>
+        <div style="font-family:'Cinzel',serif;font-size:.82rem;color:var(--gold);margin-top:4px;">₦${LL.fmt(b.price)}</div>
+        <div style="font-size:.66rem;color:var(--ivory-d);margin-top:3px;">${Array.isArray(b.includes)?b.includes.length:0} included items · ${b.stock_qty||0} in stock</div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="editBox('${b.id}')"><span data-icon="edit"></span>Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBox('${b.id}')"><span data-icon="trash"></span></button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+  LL.renderIcons();
+}
+
+// ── POPULATE SELECTS ────────────────────────────────────────────────────────
+function populateSelects() {
+  // Category modal section select
+  const catSec = document.getElementById('catSection');
+  catSec.innerHTML = '<option value="">Select section…</option>' + sections.map(s=>`<option value="${s.id}">${LL.esc(s.name)}</option>`).join('');
+  // Item modal section select
+  const iSec = document.getElementById('iSection');
+  iSec.innerHTML = '<option value="">Select section…</option>' + sections.map(s=>`<option value="${s.id}">${LL.esc(s.name)}</option>`).join('');
+  // Box category select (curated-boxes section only)
+  const curatedSec = sections.find(s=>s.slug==='curated-boxes');
+  const bCatEl = document.getElementById('bCat');
+  const boxCats = curatedSec ? categories.filter(c=>c.section_id===curatedSec.id) : [];
+  bCatEl.innerHTML = '<option value="">Select…</option>' + boxCats.map(c=>`<option value="${c.id}">${LL.esc(c.name)}</option>`).join('');
+  // Item cat filter
+  const icf = document.getElementById('itemCatFilter');
+  icf.innerHTML = '<option value="">All Categories</option>' + categories.map(c=>`<option value="${c.id}">${LL.esc(c.name)}</option>`).join('');
+}
+
+function loadCatsForSection() {
+  const sid = document.getElementById('iSection').value;
+  const cats = sid ? categories.filter(c=>c.section_id===sid) : [];
+  const el = document.getElementById('iCat');
+  el.innerHTML = '<option value="">Select category…</option>' + cats.map(c=>`<option value="${c.id}">${LL.esc(c.name)}</option>`).join('');
+}
+
+// ── IMAGE UPLOAD ──────────────────────────────────────────────────────────
+async function previewImage(input, previewId, hiddenId) {
+  const file = input.files[0]; if (!file) return;
+  const key = hiddenId;
+  uploadFiles[key] = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById(previewId);
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    input.parentElement.querySelector('.img-upload-txt').textContent = file.name;
   };
+  reader.readAsDataURL(file);
+}
 
-  try{
-    if(editingId){
-      await LL.db.from('items').update(payload).eq('id',editingId);
-      const idx=allProducts.findIndex(p=>p.id===editingId);
-      if(idx>=0)allProducts[idx]={...allProducts[idx],...payload};
-      LL.toast('Product updated','success');
-    }else{
-      payload.created_at=new Date().toISOString();
-      const{data,error}=await LL.db.from('items').insert(payload).select().single();
-      if(error)throw error;
-      allProducts.unshift(data);
-      LL.toast('Product added','success');
+async function uploadImage(fileKey) {
+  const file = uploadFiles[fileKey];
+  if (!file) return null;
+  const ext = file.name.split('.').pop();
+  const path = `${fileKey}-${Date.now()}.${ext}`;
+  const { data, error } = await LL.db.storage.from(BUCKET).upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data: { publicUrl } } = LL.db.storage.from(BUCKET).getPublicUrl(path);
+  return publicUrl;
+}
+
+// ── SECTION CRUD ──────────────────────────────────────────────────────────
+function openSectionModal(id) {
+  editingSec = id || null;
+  const s = id ? sections.find(x=>x.id===id) : null;
+  LL.setTxt('secModalTitle', s ? 'Edit Section' : 'Add Section');
+  document.getElementById('secName').value = s?.name || '';
+  document.getElementById('secDesc').value = s?.description || '';
+  document.getElementById('secActive').checked = s?.is_active !== false;
+  document.getElementById('secPreview').style.display = 'none';
+  document.getElementById('secImgUrl').value = s?.cover_url || '';
+  if (s?.cover_url) { document.getElementById('secPreview').src = s.cover_url; document.getElementById('secPreview').style.display = 'block'; }
+  document.getElementById('secErr').style.display = 'none';
+  document.getElementById('sectionModal').classList.add('show'); LL.renderIcons();
+}
+function editSection(id) { openSectionModal(id); }
+function closeSectionModal() { document.getElementById('sectionModal').classList.remove('show'); uploadFiles.secImgUrl=null; }
+
+async function saveSection() {
+  const name = document.getElementById('secName').value.trim();
+  if (!name) { showErr('secErr','Name is required.'); return; }
+  const btn = document.querySelector('#sectionModal .btn-gold'); btn.disabled = true;
+  LL.setTxt('secSaveTxt','Saving…');
+  try {
+    let imgUrl = document.getElementById('secImgUrl').value || null;
+    if (uploadFiles.secImgUrl) imgUrl = await uploadImage('secImgUrl');
+    const payload = { name, slug: name.toLowerCase().replace(/\s+/g,'-'), description: document.getElementById('secDesc').value.trim()||null, cover_url: imgUrl, is_active: document.getElementById('secActive').checked };
+    if (editingSec) {
+      await LL.db.from('sections').update(payload).eq('id', editingSec);
+      const i = sections.findIndex(x=>x.id===editingSec); if(i>=0) sections[i]={...sections[i],...payload};
+      LL.toast('Section updated','success');
+    } else {
+      const { data, error } = await LL.db.from('sections').insert({...payload,sort_order:sections.length}).select().single();
+      if (error) throw error; sections.push(data);
+      LL.toast('Section added','success');
     }
-    closeModal();renderTable();
-  }catch(e){setErr('Save failed: '+e.message);}
-  btn.disabled=false;LL.setTxt('saveBtnTxt','Save Product');
+    closeSectionModal(); renderSections(); populateSelects();
+  } catch(e) { showErr('secErr', e.message); }
+  btn.disabled=false; LL.setTxt('secSaveTxt','Save Section');
 }
 
-async function deleteProduct(id){
-  if(!confirm('Delete this product? This cannot be undone.'))return;
-  try{
-    await LL.db.from('items').delete().eq('id',id);
-    allProducts=allProducts.filter(p=>p.id!==id);
-    renderTable();LL.toast('Product deleted','info');
-  }catch(e){LL.toast('Delete failed','error');}
+async function deleteSection(id) {
+  if (!confirm('Delete this section and all its categories?')) return;
+  await LL.db.from('sections').delete().eq('id',id);
+  sections = sections.filter(s=>s.id!==id);
+  categories = categories.filter(c=>c.section_id!==id);
+  renderSections(); populateSelects();
+  if (activeSectionId===id) { document.getElementById('catPanel').style.display='none'; activeSectionId=null; }
+  LL.toast('Section deleted','info');
 }
 
-function setErr(msg){document.getElementById('prodErrTxt').textContent=msg;document.getElementById('prodErr').className='msg error show';}
+// ── CATEGORY CRUD ─────────────────────────────────────────────────────────
+function openCatModal(id) {
+  editingCat = id || null;
+  const c = id ? categories.find(x=>x.id===id) : null;
+  LL.setTxt('catModalTitle', c ? 'Edit Category' : 'Add Category');
+  document.getElementById('catSection').value = c?.section_id || activeSectionId || '';
+  document.getElementById('catName').value = c?.name || '';
+  document.getElementById('catDesc').value = c?.description || '';
+  document.getElementById('catActive').checked = c?.is_active !== false;
+  document.getElementById('catPreview').style.display = 'none';
+  if (c?.cover_url) { document.getElementById('catPreview').src = c.cover_url; document.getElementById('catPreview').style.display='block'; }
+  document.getElementById('catErr').style.display = 'none';
+  document.getElementById('catModal').classList.add('show'); LL.renderIcons();
+}
+function editCategory(id) { openCatModal(id); }
+function closeCatModal() { document.getElementById('catModal').classList.remove('show'); uploadFiles.catImgUrl=null; }
+
+async function saveCategory() {
+  const name = document.getElementById('catName').value.trim();
+  const sectionId = document.getElementById('catSection').value;
+  if (!name) { showErr('catErr','Category name is required.'); return; }
+  if (!sectionId) { showErr('catErr','Please select a parent section.'); return; }
+  const btn = document.querySelector('#catModal .btn-gold'); btn.disabled=true;
+  LL.setTxt('catSaveTxt','Saving…');
+  try {
+    let imgUrl = null;
+    if (uploadFiles.catImgUrl) imgUrl = await uploadImage('catImgUrl');
+    const payload = { name, slug: name.toLowerCase().replace(/\s+/g,'-'), section_id: sectionId, description: document.getElementById('catDesc').value.trim()||null, cover_url: imgUrl, is_active: document.getElementById('catActive').checked };
+    if (editingCat) {
+      await LL.db.from('categories').update(payload).eq('id',editingCat);
+      const i = categories.findIndex(x=>x.id===editingCat); if(i>=0) categories[i]={...categories[i],...payload};
+      LL.toast('Category updated','success');
+    } else {
+      const {data,error} = await LL.db.from('categories').insert({...payload,sort_order:categories.length}).select().single();
+      if (error) throw error; categories.push(data);
+      LL.toast('Category added','success');
+    }
+    closeCatModal();
+    if (activeSectionId) renderCatTable(activeSectionId);
+    populateSelects();
+  } catch(e) { showErr('catErr', e.message); }
+  btn.disabled=false; LL.setTxt('catSaveTxt','Save Category');
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Delete this category?')) return;
+  await LL.db.from('categories').delete().eq('id',id);
+  categories = categories.filter(c=>c.id!==id);
+  if (activeSectionId) renderCatTable(activeSectionId);
+  populateSelects(); LL.toast('Category deleted','info');
+}
+
+// ── ITEM CRUD ─────────────────────────────────────────────────────────────
+function openItemModal(id) {
+  editingItem = id || null;
+  const p = id ? items.find(x=>x.id===id) : null;
+  LL.setTxt('itemModalTitle', p ? 'Edit Item' : 'Add Item');
+  document.getElementById('iName').value = p?.name || '';
+  document.getElementById('iPrice').value = p?.price || '';
+  document.getElementById('iOrigPrice').value = p?.original_price || '';
+  document.getElementById('iStock').value = p?.stock_qty || '';
+  document.getElementById('iDesc').value = p?.description || '';
+  document.getElementById('iBadge').value = p?.badge || '';
+  document.getElementById('iActive').checked = p?.is_active !== false;
+  document.getElementById('iBoxItem').checked = p?.is_box_item || false;
+  document.getElementById('iImgPreview').style.display='none';
+  document.getElementById('iImgUrl').value = p?.image_url || '';
+  if (p?.image_url) { document.getElementById('iImgPreview').src=p.image_url; document.getElementById('iImgPreview').style.display='block'; }
+  // Set section then trigger cat load
+  if (p) {
+    const cat = categories.find(c=>c.id===p.category_id);
+    document.getElementById('iSection').value = cat?.section_id || '';
+    loadCatsForSection();
+    setTimeout(()=>{ document.getElementById('iCat').value = p.category_id||''; }, 50);
+  } else {
+    document.getElementById('iSection').value=''; document.getElementById('iCat').innerHTML='<option value="">Select category…</option>';
+  }
+  document.getElementById('itemErr').style.display='none';
+  document.getElementById('itemModal').classList.add('show'); LL.renderIcons();
+}
+function editItem(id) { openItemModal(id); }
+function closeItemModal() { document.getElementById('itemModal').classList.remove('show'); uploadFiles.iImgUrl=null; }
+
+async function saveItem() {
+  const name = document.getElementById('iName').value.trim();
+  const price = parseFloat(document.getElementById('iPrice').value);
+  if (!name) { showErr('itemErr','Item name is required.'); return; }
+  if (!price||isNaN(price)) { showErr('itemErr','Enter a valid price.'); return; }
+  const btn = document.querySelector('#itemModal .btn-gold'); btn.disabled=true;
+  LL.setTxt('itemSaveTxt','Saving…');
+  try {
+    let imgUrl = document.getElementById('iImgUrl').value || null;
+    if (uploadFiles.iImgUrl) imgUrl = await uploadImage('iImgUrl');
+    const catId = document.getElementById('iCat').value || null;
+    const cat = catId ? categories.find(c=>c.id===catId) : null;
+    const payload = {
+      name, price, original_price: parseFloat(document.getElementById('iOrigPrice').value)||null,
+      stock_qty: parseInt(document.getElementById('iStock').value)||0,
+      in_stock: (parseInt(document.getElementById('iStock').value)||0) > 0,
+      description: document.getElementById('iDesc').value.trim()||null,
+      badge: document.getElementById('iBadge').value||null,
+      category_id: catId, section_id: cat?.section_id||null,
+      image_url: imgUrl, is_active: document.getElementById('iActive').checked,
+      is_box_item: document.getElementById('iBoxItem').checked,
+      updated_at: new Date().toISOString(),
+    };
+    if (editingItem) {
+      await LL.db.from('items').update(payload).eq('id',editingItem);
+      const i=items.findIndex(x=>x.id===editingItem); if(i>=0) items[i]={...items[i],...payload};
+      LL.toast('Item updated','success');
+    } else {
+      payload.created_at = new Date().toISOString();
+      const {data,error} = await LL.db.from('items').insert(payload).select().single();
+      if (error) throw error; items.unshift(data);
+      LL.toast('Item added','success');
+    }
+    closeItemModal(); renderItems();
+  } catch(e) { showErr('itemErr', e.message); }
+  btn.disabled=false; LL.setTxt('itemSaveTxt','Save Item');
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this item?')) return;
+  await LL.db.from('items').delete().eq('id',id);
+  items = items.filter(p=>p.id!==id); renderItems();
+  LL.toast('Item deleted','info');
+}
+
+// ── CURATED BOX CRUD ──────────────────────────────────────────────────────
+function addIncludeRow(val='') {
+  const list = document.getElementById('includesList');
+  const div = document.createElement('div'); div.className='inc-row';
+  div.innerHTML=`<input class="inc-inp" type="text" placeholder="e.g. Premium scented candle" value="${LL.esc(val)}"/>
+    <button type="button" class="inc-rm" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+  list.appendChild(div);
+}
+
+function openBoxModal(id) {
+  editingBox = id || null;
+  const b = id ? boxes.find(x=>x.id===id) : null;
+  LL.setTxt('boxModalTitle', b ? 'Edit Curated Box' : 'Add Curated Box');
+  document.getElementById('bName').value = b?.name || '';
+  document.getElementById('bPrice').value = b?.price || '';
+  document.getElementById('bOrigPrice').value = b?.original_price || '';
+  document.getElementById('bStock').value = b?.stock_qty || '';
+  document.getElementById('bDesc').value = b?.description || '';
+  document.getElementById('bBadge').value = b?.badge || '';
+  document.getElementById('bCat').value = b?.category_id || '';
+  document.getElementById('bActive').checked = b?.is_active !== false;
+  document.getElementById('bImgPreview').style.display='none';
+  if (b?.image_url) { document.getElementById('bImgPreview').src=b.image_url; document.getElementById('bImgPreview').style.display='block'; }
+  // Includes
+  document.getElementById('includesList').innerHTML='';
+  if (b?.includes && Array.isArray(b.includes)) b.includes.forEach(v=>addIncludeRow(v));
+  else addIncludeRow();
+  document.getElementById('boxErr').style.display='none';
+  document.getElementById('boxModal').classList.add('show'); LL.renderIcons();
+}
+function editBox(id) { openBoxModal(id); }
+function closeBoxModal() { document.getElementById('boxModal').classList.remove('show'); uploadFiles.bImgUrl=null; }
+
+async function saveBox() {
+  const name = document.getElementById('bName').value.trim();
+  const price = parseFloat(document.getElementById('bPrice').value);
+  if (!name) { showErr('boxErr','Box name is required.'); return; }
+  if (!price||isNaN(price)) { showErr('boxErr','Enter a valid price.'); return; }
+  const btn = document.querySelector('#boxModal .btn-gold'); btn.disabled=true;
+  LL.setTxt('boxSaveTxt','Saving…');
+  try {
+    let imgUrl = null;
+    if (uploadFiles.bImgUrl) imgUrl = await uploadImage('bImgUrl');
+    const includes = [...document.getElementById('includesList').querySelectorAll('.inc-inp')].map(i=>i.value.trim()).filter(Boolean);
+    const payload = {
+      name, price, original_price: parseFloat(document.getElementById('bOrigPrice').value)||null,
+      stock_qty: parseInt(document.getElementById('bStock').value)||0,
+      description: document.getElementById('bDesc').value.trim()||null,
+      badge: document.getElementById('bBadge').value||null,
+      category_id: document.getElementById('bCat').value||null,
+      image_url: imgUrl || (editingBox ? boxes.find(b=>b.id===editingBox)?.image_url : null),
+      includes, is_active: document.getElementById('bActive').checked,
+      updated_at: new Date().toISOString(),
+    };
+    if (editingBox) {
+      await LL.db.from('curated_boxes').update(payload).eq('id',editingBox);
+      const i=boxes.findIndex(b=>b.id===editingBox); if(i>=0) boxes[i]={...boxes[i],...payload};
+      LL.toast('Box updated','success');
+    } else {
+      payload.created_at = new Date().toISOString();
+      const {data,error} = await LL.db.from('curated_boxes').insert(payload).select().single();
+      if (error) throw error; boxes.unshift(data);
+      LL.toast('Curated box added','success');
+    }
+    closeBoxModal(); renderBoxes();
+  } catch(e) { showErr('boxErr', e.message); }
+  btn.disabled=false; LL.setTxt('boxSaveTxt','Save Box');
+}
+
+async function deleteBox(id) {
+  if (!confirm('Delete this box?')) return;
+  await LL.db.from('curated_boxes').delete().eq('id',id);
+  boxes = boxes.filter(b=>b.id!==id); renderBoxes();
+  LL.toast('Box deleted','info');
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg; el.style.display = 'flex';
+}
 </script>
 </body>
 </html>
