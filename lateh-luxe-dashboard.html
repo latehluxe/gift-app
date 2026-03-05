@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — Lateh Luxe Collections</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="ll-core.js"></script>
+<link rel="stylesheet" href="ll-theme.css"/>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sb" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect x=".5" y=".5" width="31" height="31" stroke="#C9A84C" stroke-width=".7"/><rect x="4" y="4" width="24" height="24" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2"/><path d="M16 8l5 8-5 8-5-8z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.15)"/><circle cx="16" cy="16" r="2" fill="#C9A84C"/></svg></div>
+    <div><div class="sb-brand-name">Lateh <em>Luxe</em></div><div class="sb-brand-tag">Collections</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av" id="sbAv">LL</div>
+    <div class="sb-user-info">
+      <div class="sb-name" id="sbName">Loading…</div>
+      <div class="sb-email" id="sbEmail"></div>
+      <div class="sb-tier" id="sbTier"></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a class="ni on" href="lateh-luxe-dashboard.html"><span class="ni-ic" data-icon="dashboard"></span><span class="ni-lb">Dashboard</span></a>
+    <a class="ni" href="lateh-luxe-browse.html"><span class="ni-ic" data-icon="browse"></span><span class="ni-lb">Browse Catalogue</span></a>
+    <a class="ni" href="lateh-luxe-cart.html"><span class="ni-ic" data-icon="cart"></span><span class="ni-lb">My Cart</span><span class="nbadge" id="cartB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-wishlist.html"><span class="ni-ic" data-icon="wishlist"></span><span class="ni-lb">Wishlist</span><span class="nbadge" id="wlB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-orders.html"><span class="ni-ic" data-icon="orders"></span><span class="ni-lb">My Orders</span></a>
+    <a class="ni" href="lateh-luxe-notifications.html"><span class="ni-ic" data-icon="notifications"></span><span class="ni-lb">Notifications</span><span class="nbadge" id="notifB" style="display:none"></span></a>
+    <a class="ni" href="lateh-luxe-support.html"><span class="ni-ic" data-icon="support"></span><span class="ni-lb">Support</span></a>
+  </nav>
+  <div class="sb-foot">
+    <button class="sb-signout" onclick="LL.signOut()"><span class="sb-so-ic" data-icon="sign-out"></span>Sign Out</button>
+  </div>
+</aside>
+<div class="sb-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="tb-menu" onclick="toggleSidebar()"><span data-icon="menu"></span></button>
+    <div class="tb-title"><div class="tb-heading">Dashboard</div><div class="tb-sub" id="tbSub">Good morning</div></div>
+    <div class="tb-actions">
+      <button class="tb-ic" onclick="location.href='lateh-luxe-cart.html'" title="Cart"><span data-icon="cart"></span><span class="tb-dot" id="cDot" style="display:none"></span></button>
+      <button class="tb-ic" onclick="location.href='lateh-luxe-notifications.html'" title="Notifications"><span data-icon="notifications"></span><span class="tb-dot" id="nDot" style="display:none"></span></button>
+      <div class="tb-av" id="tbAv">LL</div>
+    </div>
+  </header>
+
+  <div class="pg">
+
+    <!-- WELCOME BANNER -->
+    <div class="welcome-banner" id="welcomeBanner">
+      <div class="wb-text">
+        <div class="wb-greeting" id="wbGreeting">Welcome to Lateh Luxe</div>
+        <div class="wb-sub">Discover our curated collection of premium gifts</div>
+      </div>
+      <div class="wb-actions">
+        <button class="btn btn-gold btn-sm" onclick="location.href='lateh-luxe-browse.html'"><span data-icon="browse"></span>Browse Catalogue</button>
+        <button class="btn btn-outline btn-sm" onclick="location.href='lateh-luxe-orders.html'"><span data-icon="orders"></span>Track Orders</button>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi"><div class="kpi-ic gold"><span data-icon="orders"></span></div><div><div class="kpi-val" id="kpiOrders">—</div><div class="kpi-lb">Total Orders</div></div></div>
+      <div class="kpi"><div class="kpi-ic blue"><span data-icon="truck"></span></div><div><div class="kpi-val" id="kpiActive">—</div><div class="kpi-lb">Active Orders</div></div></div>
+      <div class="kpi"><div class="kpi-ic green"><span data-icon="wishlist"></span></div><div><div class="kpi-val" id="kpiWishlist">—</div><div class="kpi-lb">Wishlist Items</div></div></div>
+      <div class="kpi"><div class="kpi-ic warn"><span data-icon="cart"></span></div><div><div class="kpi-val" id="kpiCart">—</div><div class="kpi-lb">Cart Items</div></div></div>
+    </div>
+
+    <!-- AFFILIATE PANEL (hidden unless affiliate) -->
+    <div class="aff-panel card card-pad" id="affPanel" style="display:none;margin-bottom:20px;">
+      <div class="sec-hd" style="margin-bottom:14px;">
+        <div><div class="sec-title"><em>Affiliate</em> Panel</div><div class="sec-sub">Your referral performance</div></div>
+        <span class="pill pill-pend" id="affStatus">Pending</span>
+      </div>
+      <div class="aff-kpis">
+        <div class="aff-kpi"><div class="aff-kpi-val" id="affClicks">0</div><div class="aff-kpi-lb">Link Clicks</div></div>
+        <div class="aff-kpi"><div class="aff-kpi-val" id="affConv">0</div><div class="aff-kpi-lb">Conversions</div></div>
+        <div class="aff-kpi"><div class="aff-kpi-val" id="affEarned">₦0</div><div class="aff-kpi-lb">Earnings</div></div>
+      </div>
+      <div class="ref-link-row">
+        <label style="font-size:.62rem;letter-spacing:.12em;color:var(--gold-d);text-transform:uppercase;">Your Referral Link</label>
+        <div class="ref-link-wrap">
+          <input type="text" id="refLinkInp" class="ref-link-inp" readonly/>
+          <button class="btn btn-outline btn-sm" onclick="copyRef()"><span data-icon="copy"></span>Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- RECENT ORDERS -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-title"><span data-icon="orders"></span>Recent Orders</div>
+          <a class="card-hd-link" href="lateh-luxe-orders.html">View all</a>
+        </div>
+        <div id="recentOrders"><div class="page-loader"><div class="spin"></div></div></div>
+      </div>
+
+      <!-- QUICK ACTIONS + WISHLIST PREVIEW -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card card-pad">
+          <div class="sec-title" style="font-size:1rem;margin-bottom:14px;">Quick Actions</div>
+          <div class="qa-grid">
+            <button class="qa-btn" onclick="location.href='lateh-luxe-browse.html'"><span data-icon="browse"></span>Browse Gifts</button>
+            <button class="qa-btn" onclick="location.href='lateh-luxe-cart.html'"><span data-icon="cart"></span>View Cart</button>
+            <button class="qa-btn" onclick="location.href='lateh-luxe-orders.html'"><span data-icon="truck"></span>Track Order</button>
+            <button class="qa-btn" onclick="location.href='lateh-luxe-support.html'"><span data-icon="support"></span>Get Help</button>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-hd" style="margin-bottom:14px;">
+            <div class="card-hd-title"><span data-icon="wishlist"></span>Wishlist</div>
+            <a class="card-hd-link" href="lateh-luxe-wishlist.html">View all</a>
+          </div>
+          <div id="wishPreview"><div class="page-loader" style="min-height:80px;"><div class="spin"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<style>
+.welcome-banner{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(46,31,62,.4));border:1px solid rgba(201,168,76,.18);border-radius:var(--r2);padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+.wb-greeting{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--ivory);}
+.wb-sub{font-size:.76rem;color:var(--ivory-d);margin-top:4px;}
+.wb-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr;}}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(201,168,76,.08);}
+.card-hd-title{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:500;color:var(--ivory-m);}
+.card-hd-title svg{width:14px;height:14px;color:var(--gold);}
+.card-hd-link{font-size:.68rem;letter-spacing:.08em;color:var(--gold-d);transition:color .18s;}
+.card-hd-link:hover{color:var(--gold);}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.qa-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.12);border-radius:var(--r);color:var(--ivory-d);font-size:.74rem;letter-spacing:.04em;cursor:pointer;transition:all .18s;}
+.qa-btn:hover{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.25);color:var(--gold-l);}
+.qa-btn svg{width:14px;height:14px;flex-shrink:0;color:var(--gold-d);}
+.order-row{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.03);gap:10px;cursor:pointer;transition:background .15s;}
+.order-row:last-child{border-bottom:none;}
+.order-row:hover{background:rgba(255,255,255,.02);}
+.or-id{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.1em;color:var(--gold);}
+.or-name{font-size:.78rem;color:var(--ivory-m);margin-top:2px;}
+.or-date{font-size:.62rem;color:var(--ivory-d);margin-top:1px;}
+.or-total{font-family:'Cinzel',serif;font-size:.78rem;color:var(--ivory);text-align:right;}
+.wish-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+.wish-item:last-child{border-bottom:none;}
+.wi-thumb{width:40px;height:40px;background:var(--deep4);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.wi-thumb img{width:100%;height:100%;object-fit:cover;}
+.wi-thumb svg{width:16px;height:16px;color:var(--gold-d);}
+.wi-name{font-size:.78rem;color:var(--ivory-m);flex:1;}
+.wi-price{font-family:'Cinzel',serif;font-size:.74rem;color:var(--gold);}
+.aff-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.aff-kpi{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.1);border-radius:var(--r);padding:12px;text-align:center;}
+.aff-kpi-val{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold);}
+.aff-kpi-lb{font-size:.6rem;letter-spacing:.1em;color:var(--ivory-d);text-transform:uppercase;margin-top:3px;}
+.ref-link-row{display:flex;flex-direction:column;gap:6px;}
+.ref-link-wrap{display:flex;gap:8px;}
+.ref-link-inp{flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.15);border-radius:var(--r);color:var(--gold);font-size:.7rem;padding:8px 10px;outline:none;}
+</style>
+
+<script>
+window.addEventListener('load',async()=>{
+  LL.renderIcons();
+  const auth=await LL.requireAuth('customer');
+  if(!auth)return;
+  const u=auth.u;
+  LL.paintUser(u);
+  LL.watchAuth();
+
+  // Greeting
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  LL.setTxt('tbSub',`${greet}, ${u.firstName||u.name.split(' ')[0]}!`);
+  LL.setTxt('wbGreeting',`${greet}, ${u.firstName||u.name.split(' ')[0]} ✦`);
+
+  // Affiliate panel
+  if(u.role==='affiliate'){
+    document.getElementById('affPanel').style.display='';
+    LL.setTxt('affStatus',u.affiliateStatus==='active'?'Active':'Pending Review');
+    document.getElementById('affStatus').className='pill '+(u.affiliateStatus==='active'?'pill-ok':'pill-pend');
+    document.getElementById('refLinkInp').value=`https://latehluxe.com?ref=${u.id.slice(0,8)}`;
+    loadAffiliateStats(u.id);
+  }
+
+  // KPI: cart
+  const cart=LL.getCart();
+  LL.setTxt('kpiCart',cart.reduce((s,c)=>s+(c.qty||1),0));
+  // Wishlist from localStorage
+  const wl=LL.getLocal('ll_wishlist')||[];
+  LL.setTxt('kpiWishlist',wl.length);
+
+  await Promise.all([loadRecentOrders(u.id),loadWishPreview(wl)]);
+});
+
+async function loadRecentOrders(uid){
+  const wrap=document.getElementById('recentOrders');
+  try{
+    const{data,error}=await LL.db.from('orders').select('id,created_at,status,total,items').eq('user_id',uid).order('created_at',{ascending:false}).limit(5);
+    if(error||!data||!data.length){wrap.innerHTML='<div class="empty" style="padding:24px;"><div class="empty-ic"><span data-icon="orders"></span></div><div class="empty-sub">No orders yet.<br/><a href="lateh-luxe-browse.html" style="color:var(--gold);">Start shopping →</a></div></div>';LL.renderIcons();return;}
+    LL.setTxt('kpiOrders',data.length);
+    const active=data.filter(o=>!['delivered','cancelled'].includes(o.status)).length;
+    LL.setTxt('kpiActive',active);
+    wrap.innerHTML=data.map(o=>`
+      <div class="order-row" onclick="location.href='lateh-luxe-orders.html'">
+        <div><div class="or-id">#${o.id.slice(-6).toUpperCase()}</div><div class="or-name">${LL.esc(Array.isArray(o.items)?o.items.map(i=>i.name).join(', ').slice(0,40):'Order')}</div><div class="or-date">${LL.fmtDate(o.created_at)}</div></div>
+        <div><div class="or-total">₦${LL.fmt(o.total)}</div><span class="pill ${statusPill(o.status)}">${o.status}</span></div>
+      </div>`).join('');
+  }catch(e){wrap.innerHTML='<div class="empty" style="padding:24px;"><div class="empty-sub">Could not load orders.</div></div>';}
+}
+
+async function loadWishPreview(wl){
+  const wrap=document.getElementById('wishPreview');
+  if(!wl.length){wrap.innerHTML='<div style="padding:8px;font-size:.74rem;color:var(--ivory-d);">No wishlist items yet. <a href="lateh-luxe-browse.html" style="color:var(--gold);">Browse →</a></div>';return;}
+  wrap.innerHTML=wl.slice(0,4).map(w=>`
+    <div class="wish-item">
+      <div class="wi-thumb">${w.image?`<img src="${LL.esc(w.image)}" alt=""/>` :'<span data-icon="gift"></span>'}</div>
+      <div class="wi-name">${LL.esc(w.name||'Item')}</div>
+      <div class="wi-price">₦${LL.fmt(w.price)}</div>
+    </div>`).join('');
+  LL.renderIcons();
+}
+
+async function loadAffiliateStats(uid){
+  try{
+    const{data}=await LL.db.from('affiliate_stats').select('clicks,conversions,earnings').eq('user_id',uid).maybeSingle();
+    if(data){LL.setTxt('affClicks',data.clicks||0);LL.setTxt('affConv',data.conversions||0);LL.setTxt('affEarned','₦'+LL.fmt(data.earnings||0));}
+  }catch(_){}
+}
+
+function statusPill(s){const m={pending:'pill-pend',processing:'pill-proc',shipped:'pill-ship',delivered:'pill-ok',cancelled:'pill-cancel'};return m[s]||'pill-pend';}
+
+function copyRef(){
+  const inp=document.getElementById('refLinkInp');
+  navigator.clipboard.writeText(inp.value).then(()=>LL.toast('Referral link copied!','success')).catch(()=>{inp.select();document.execCommand('copy');LL.toast('Copied!','success');});
+}
+</script>
+</body>
+</html>

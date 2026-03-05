@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<title>Sign In — Lateh Luxe Collections</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Cinzel:wght@400;500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--gold:#C9A84C;--gold-l:#E8C97A;--gold-d:#7a6228;--deep:#0a0a0f;--deep2:#12111a;--deep3:#1c1b28;--ivory:#FAF5EA;--ivory-m:#d8cdb8;--ivory-d:#9a9080;--plum:#2e1f3e;--plum-m:#3d2a56;--ok:#5a9e7c;--err:#d4596a;--warn:#c9844c;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Raleway',sans-serif;background:var(--deep);color:var(--ivory);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:var(--deep2);}::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);border-radius:2px;}
+.bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 20%,rgba(201,168,76,.1) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 10% 80%,rgba(46,31,62,.8) 0%,transparent 55%),radial-gradient(100% 100% at 50% 50%,#0e0d18 0%,#0a0a0f 100%);}
+.bg::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(201,168,76,.02) 60px,rgba(201,168,76,.02) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(201,168,76,.02) 60px,rgba(201,168,76,.02) 61px);}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 14s ease-in-out infinite alternate;}
+.o1{width:420px;height:420px;top:-80px;right:-60px;background:rgba(201,168,76,.07);}
+.o2{width:300px;height:300px;bottom:-50px;left:-80px;background:rgba(61,42,86,.5);animation-delay:-5s;}
+.o3{width:180px;height:180px;top:40%;left:30%;background:rgba(201,168,76,.04);animation-delay:-9s;}
+@keyframes drift{from{transform:translate(0,0) scale(1);}to{transform:translate(28px,18px) scale(1.07);}}
+.shell{position:relative;z-index:1;display:flex;height:100vh;width:100vw;}
+/* LEFT PANEL */
+.lp{display:none;width:43%;flex-direction:column;justify-content:center;align-items:flex-start;padding:56px 52px;border-right:1px solid rgba(201,168,76,.12);position:relative;}
+@media(min-width:900px){.lp{display:flex;}}
+.lp>*{animation:fadeUp .7s ease both;}
+.lp>*:nth-child(2){animation-delay:.1s;}.lp>*:nth-child(3){animation-delay:.18s;}.lp>*:nth-child(4){animation-delay:.24s;}.lp>*:nth-child(5){animation-delay:.3s;}
+.brand-tag{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;opacity:.8;}
+.brand-name{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4vw,3.2rem);font-weight:300;line-height:1.08;margin-bottom:8px;}
+.brand-name em{font-style:italic;color:var(--gold-l);}
+.brand-tagline{font-size:.8rem;font-weight:300;letter-spacing:.18em;color:var(--ivory-d);margin-bottom:44px;text-transform:uppercase;}
+.divider-g{width:56px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin-bottom:32px;}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:18px;}
+.feat-list li{display:flex;align-items:center;gap:13px;font-size:.8rem;font-weight:300;letter-spacing:.05em;color:var(--ivory-d);}
+.fdot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;box-shadow:0 0 8px rgba(201,168,76,.4);}
+.lp-bottom{position:absolute;bottom:36px;left:52px;font-size:.66rem;letter-spacing:.12em;color:rgba(201,168,76,.3);text-transform:uppercase;}
+.corner-deco{position:absolute;top:32px;right:32px;width:72px;height:72px;opacity:.2;}
+.corner-deco svg{width:100%;height:100%;}
+/* RIGHT PANEL */
+.rp{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px 20px;overflow-y:auto;}
+.form-card{width:100%;max-width:400px;animation:fadeUp .55s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+/* MOBILE BRAND */
+.mob-brand{display:block;text-align:center;margin-bottom:28px;}
+@media(min-width:900px){.mob-brand{display:none;}}
+.mob-brand .ml{width:40px;height:40px;margin:0 auto 9px;}
+.mob-brand h1{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;}
+.mob-brand h1 em{font-style:italic;color:var(--gold-l);}
+.mob-brand p{font-size:.64rem;letter-spacing:.2em;color:var(--ivory-d);text-transform:uppercase;margin-top:4px;}
+/* TABS */
+.auth-tabs{display:flex;border:1px solid rgba(201,168,76,.18);border-radius:3px;overflow:hidden;margin-bottom:22px;}
+.tab-btn{flex:1;padding:10px 0;background:transparent;border:none;cursor:pointer;font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.18em;color:var(--ivory-d);text-transform:uppercase;transition:all .25s;position:relative;}
+.tab-btn.active{background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.04));color:var(--gold-l);}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+/* FORMS */
+.auth-form{display:flex;flex-direction:column;gap:13px;}
+.auth-form.hidden{display:none;}
+.form-title{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-weight:300;}
+.form-sub{font-size:.71rem;font-weight:300;letter-spacing:.06em;color:var(--ivory-d);margin-top:1px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:.61rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-d);}
+.field input,.field select{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.16);border-radius:3px;color:var(--ivory);font-family:'Raleway',sans-serif;font-size:.84rem;font-weight:300;padding:10px 12px;outline:none;transition:border-color .22s,background .22s;-webkit-appearance:none;width:100%;}
+.field input::placeholder{color:rgba(250,245,234,.18);}
+.field input:focus,.field select:focus{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.04);}
+.field input.err{border-color:var(--err)!important;animation:shake .38s ease;}
+.field select option{background:var(--deep3);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pw{position:relative;}
+.pw input{padding-right:38px;}
+.pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ivory-d);padding:2px;display:flex;align-items:center;transition:color .18s;}
+.pw-toggle:hover{color:var(--gold-l);}
+.pw-toggle svg{width:14px;height:14px;}
+/* STRENGTH */
+.str-bars{display:flex;gap:3px;margin-top:3px;}
+.str-b{flex:1;height:2px;border-radius:2px;background:rgba(255,255,255,.07);transition:background .28s;}
+.str-b.weak{background:var(--err);}.str-b.fair{background:var(--warn);}.str-b.strong{background:var(--ok);}
+.str-lbl{font-size:.57rem;color:var(--ivory-d);margin-top:2px;letter-spacing:.06em;min-height:12px;}
+/* ROLE CARDS */
+.role-row{display:flex;gap:8px;}
+.role-opt{flex:1;}
+.role-opt input[type="radio"]{display:none;}
+.role-opt label{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;border:1px solid rgba(201,168,76,.16);border-radius:5px;cursor:pointer;transition:all .22s;font-size:.63rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ivory-d);position:relative;}
+.role-opt label .ri{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);transition:all .22s;}
+.role-opt label .ri svg{width:13px;height:13px;}
+.role-opt label .rd{font-size:.56rem;color:var(--ivory-d);opacity:.55;letter-spacing:.03em;text-transform:none;text-align:center;line-height:1.4;margin-top:1px;}
+.role-opt input:checked+label{border-color:var(--gold);background:rgba(201,168,76,.07);color:var(--gold-l);}
+.role-opt input:checked+label .ri{background:rgba(201,168,76,.14);}
+.role-opt input:checked+label .rd{color:var(--gold-d);opacity:1;}
+.role-opt label::after{content:'';position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;border:1.5px solid rgba(201,168,76,.28);transition:all .22s;}
+.role-opt input:checked+label::after{background:var(--gold);border-color:var(--gold);}
+/* AFFILIATE NOTE */
+.aff-note{display:none;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.15);border-radius:3px;padding:9px 12px;font-size:.7rem;color:var(--ivory-d);line-height:1.6;}
+.aff-note.show{display:block;}
+.aff-note strong{color:var(--gold-l);}
+/* MESSAGES */
+.msg{display:none;font-size:.71rem;padding:8px 11px;border-radius:3px;align-items:flex-start;gap:7px;line-height:1.5;}
+.msg.show{display:flex;}
+.msg svg{flex-shrink:0;margin-top:1px;width:12px;height:12px;}
+.msg.error{background:rgba(212,89,106,.1);border:1px solid rgba(212,89,106,.26);color:#f09090;}
+.msg.success{background:rgba(90,158,124,.1);border:1px solid rgba(90,158,124,.26);color:#7ecfa3;}
+.msg.info{background:rgba(90,142,201,.1);border:1px solid rgba(90,142,201,.26);color:#8aabf0;}
+/* BUTTONS */
+.btn-gold{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),#b8882a);border:none;border-radius:3px;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:var(--deep);cursor:pointer;font-weight:500;transition:opacity .18s,transform .13s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-gold:hover{opacity:.9;transform:translateY(-1px);}
+.btn-gold:active{transform:none;}
+.btn-gold:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.btn-ghost{width:100%;padding:10px;background:transparent;border:1px solid rgba(201,168,76,.18);border-radius:3px;font-family:'Raleway',sans-serif;font-size:.76rem;letter-spacing:.07em;color:var(--ivory-d);cursor:pointer;transition:all .22s;}
+.btn-ghost:hover{border-color:rgba(201,168,76,.42);color:var(--gold-l);}
+.spin{width:13px;height:13px;border:2px solid rgba(10,10,15,.25);border-top-color:var(--deep);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.or-div{display:flex;align-items:center;gap:11px;font-size:.59rem;letter-spacing:.14em;color:rgba(201,168,76,.25);text-transform:uppercase;}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:rgba(201,168,76,.1);}
+.switch-p{text-align:center;font-size:.7rem;font-weight:300;color:var(--ivory-d);}
+.switch-p a{color:var(--gold);border-bottom:1px solid rgba(201,168,76,.28);transition:border-color .18s;}
+.switch-p a:hover{border-color:var(--gold);}
+.terms{font-size:.61rem;color:rgba(250,245,234,.22);text-align:center;line-height:1.7;}
+.terms a{color:rgba(201,168,76,.45);}
+.forgot{text-align:right;margin-top:-4px;}
+.forgot a{font-size:.64rem;color:var(--gold-d);cursor:pointer;letter-spacing:.04em;transition:color .18s;}
+.forgot a:hover{color:var(--gold-l);}
+/* CONFIRM PANEL */
+.confirm-panel{display:none;flex-direction:column;align-items:center;text-align:center;gap:16px;padding:6px 0;}
+.confirm-panel.show{display:flex;}
+.c-icon{width:64px;height:64px;border-radius:50%;border:1px solid rgba(201,168,76,.28);background:linear-gradient(135deg,rgba(201,168,76,.07),rgba(46,31,62,.3));display:flex;align-items:center;justify-content:center;animation:pop .45s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
+.c-icon svg{width:28px;height:28px;stroke:var(--gold);}
+.c-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;}
+.c-title em{font-style:italic;color:var(--gold-l);}
+.c-badge{font-size:.78rem;color:var(--gold);background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.18);padding:6px 14px;border-radius:18px;word-break:break-all;}
+.c-sub{font-size:.76rem;font-weight:300;color:var(--ivory-d);line-height:1.7;max-width:320px;}
+.c-steps{display:flex;flex-direction:column;gap:8px;width:100%;background:rgba(255,255,255,.02);border:1px solid rgba(201,168,76,.09);border-radius:5px;padding:13px;}
+.cstep{display:flex;align-items:flex-start;gap:9px;text-align:left;}
+.cnum{width:18px;height:18px;border-radius:50%;background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.22);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.53rem;color:var(--gold);flex-shrink:0;margin-top:1px;}
+.ctext{font-size:.7rem;color:var(--ivory-d);line-height:1.5;}
+.ctext strong{color:var(--ivory-m);}
+.resend-row{display:flex;align-items:center;gap:7px;justify-content:center;font-size:.68rem;color:var(--ivory-d);flex-wrap:wrap;}
+.btn-resend{background:none;border:none;color:var(--gold);cursor:pointer;font-family:'Raleway',sans-serif;font-size:.68rem;font-weight:600;text-decoration:underline;text-decoration-color:rgba(201,168,76,.28);transition:color .18s;}
+.btn-resend:hover{color:var(--gold-l);}
+.btn-resend:disabled{color:var(--ivory-d);cursor:not-allowed;text-decoration:none;}
+/* PAGE LOADER */
+.pl{position:fixed;inset:0;z-index:999;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.pl.gone{display:none;}
+.pl-gem{animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(1);}50%{opacity:1;transform:scale(1.05);}}
+.pl-txt{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.28em;color:var(--gold-d);text-transform:uppercase;}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+</style>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div class="pl" id="pl">
+  <div class="pl-gem">
+    <svg width="42" height="42" viewBox="0 0 36 36" fill="none"><rect x=".5" y=".5" width="35" height="35" stroke="#C9A84C" stroke-width=".6"/><rect x="4" y="4" width="28" height="28" stroke="#C9A84C" stroke-width=".3" stroke-dasharray="2 2.5"/><path d="M18 8L26 16L18 28L10 16Z" stroke="#C9A84C" stroke-width=".7" fill="rgba(201,168,76,.1)"/><circle cx="18" cy="18" r="2" fill="#C9A84C"/></svg>
+  </div>
+  <div class="pl-txt">Loading…</div>
+</div>
+
+<div class="bg"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+
+<div class="shell">
+  <!-- LEFT BRAND PANEL -->
+  <div class="lp">
+    <div class="corner-deco">
+      <svg viewBox="0 0 80 80" fill="none"><rect x="1" y="1" width="78" height="78" stroke="#C9A84C" stroke-width=".6"/><rect x="8" y="8" width="64" height="64" stroke="#C9A84C" stroke-width=".3"/><line x1="1" y1="1" x2="20" y2="1" stroke="#C9A84C" stroke-width="1.5"/><line x1="1" y1="1" x2="1" y2="20" stroke="#C9A84C" stroke-width="1.5"/><line x1="79" y1="79" x2="60" y2="79" stroke="#C9A84C" stroke-width="1.5"/><line x1="79" y1="79" x2="79" y2="60" stroke="#C9A84C" stroke-width="1.5"/></svg>
+    </div>
+    <p class="brand-tag">Est. 2024 · Premium Collections</p>
+    <h1 class="brand-name">Lateh <em>Luxe</em><br/>Collections</h1>
+    <p class="brand-tagline">Curated gifts for every occasion</p>
+    <div class="divider-g"></div>
+    <ul class="feat-list">
+      <li><span class="fdot"></span>Hundreds of handpicked luxury gift items</li>
+      <li><span class="fdot"></span>Curated collections for every occasion</li>
+      <li><span class="fdot"></span>Seamless ordering &amp; real-time delivery tracking</li>
+      <li><span class="fdot"></span>Exclusive access for registered members</li>
+      <li><span class="fdot"></span>Affiliate programme with referral commissions</li>
+    </ul>
+    <div class="lp-bottom">© 2025 Lateh Luxe Collections</div>
+  </div>
+
+  <!-- RIGHT FORM PANEL -->
+  <div class="rp">
+    <div class="form-card">
+
+      <!-- MOBILE BRAND -->
+      <div class="mob-brand">
+        <div class="ml"><svg viewBox="0 0 48 48" fill="none"><rect x="1" y="1" width="46" height="46" stroke="#C9A84C" stroke-width=".8"/><rect x="6" y="6" width="36" height="36" stroke="#C9A84C" stroke-width=".4" stroke-dasharray="2 3"/><path d="M24 14L30 22L24 34L18 22Z" stroke="#C9A84C" stroke-width=".8" fill="rgba(201,168,76,.12)"/><circle cx="24" cy="24" r="2.5" fill="#C9A84C"/></svg></div>
+        <h1>Lateh <em>Luxe</em> Collections</h1>
+        <p>Curated gifts for every occasion</p>
+      </div>
+
+      <!-- TABS -->
+      <div class="auth-tabs" id="authTabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- CONFIRM PANEL -->
+      <div class="confirm-panel" id="confirmPanel">
+        <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <h2 class="c-title">Check your <em>email</em></h2>
+        <div class="c-badge" id="confirmEmailBadge">—</div>
+        <p class="c-sub">We sent a confirmation link. Click it to activate your account — you'll be signed in automatically.</p>
+        <div class="c-steps">
+          <div class="cstep"><div class="cnum">1</div><div class="ctext">Open your inbox and find the email from <strong>Lateh Luxe Collections</strong></div></div>
+          <div class="cstep"><div class="cnum">2</div><div class="ctext">Click <strong>Confirm your email</strong> inside the message</div></div>
+          <div class="cstep"><div class="cnum">3</div><div class="ctext">The link opens this page and <strong>signs you in automatically</strong></div></div>
+        </div>
+        <div class="resend-row">
+          <span>Didn't receive it?</span>
+          <button class="btn-resend" id="resendBtn" onclick="resendEmail()">Resend email</button>
+          <span id="resendTimer" style="display:none;font-size:.63rem;color:var(--ivory-d);"></span>
+        </div>
+        <div class="msg" id="resendMsg" style="width:100%;margin-top:-6px;"></div>
+        <button class="btn-ghost" style="margin-top:2px;font-size:.7rem;" onclick="switchTab('login')">← Back to Sign In</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+        <div><p class="form-title">Welcome back</p><p class="form-sub">Sign in to your Lateh Luxe account</p></div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="pw">
+            <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password"/>
+            <button type="button" class="pw-toggle" onclick="togglePw('loginPw',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="forgot"><a onclick="showForgot(event)">Forgot password?</a></div>
+        <div class="msg error" id="loginErr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="loginErrTxt"></span></div>
+        <div class="msg success" id="loginOk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span id="loginOkTxt"></span></div>
+        <button type="submit" class="btn-gold" id="loginBtn"><span id="loginBtnTxt">Sign In</span></button>
+        <div class="or-div">or</div>
+        <button type="button" class="btn-ghost" onclick="continueAsGuest()">Continue as Guest</button>
+        <p class="switch-p">No account? <a onclick="switchTab('signup');return false;">Create one free</a></p>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form class="auth-form hidden" id="signupForm" onsubmit="handleSignup(event)">
+        <div><p class="form-title">Join the collection</p><p class="form-sub">Create your Lateh Luxe account</p></div>
+
+        <!-- ROLE SELECTION -->
+        <div class="field">
+          <label>I am joining as</label>
+          <div class="role-row">
+            <div class="role-opt">
+              <input type="radio" name="role" id="roleCustomer" value="customer" checked onchange="onRoleChange()"/>
+              <label for="roleCustomer">
+                <span class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span>
+                Customer<span class="rd">Browse &amp; order gifts</span>
+              </label>
+            </div>
+            <div class="role-opt">
+              <input type="radio" name="role" id="roleAffiliate" value="affiliate" onchange="onRoleChange()"/>
+              <label for="roleAffiliate">
+                <span class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><circle cx="5" cy="13" r="2"/><path d="M1 20c0-2.5 1.8-4 4-4"/><circle cx="19" cy="13" r="2"/><path d="M23 20c0-2.5-1.8-4-4-4"/></svg></span>
+                Affiliate<span class="rd">Earn by referring</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="aff-note" id="affNote">
+          <strong>✦ Affiliate Partner Programme</strong><br/>
+          Earn commission on every sale through your referral link. Our team will review your application and send your dashboard details by email.
+        </div>
+
+        <div class="frow">
+          <div class="field"><label>First Name</label><input type="text" id="firstName" placeholder="Jane" autocomplete="given-name"/></div>
+          <div class="field"><label>Last Name</label><input type="text" id="lastName" placeholder="Doe" autocomplete="family-name"/></div>
+        </div>
+        <div class="field"><label>Email Address</label><input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field"><label>Phone Number</label><input type="tel" id="signupPhone" placeholder="+234 800 000 0000" autocomplete="tel"/></div>
+
+        <!-- Affiliate-only: promo channel -->
+        <div class="field" id="channelField" style="display:none;">
+          <label>Your Promotion Channel</label>
+          <select id="promoChannel">
+            <option value="">Select your main channel</option>
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="youtube">YouTube</option>
+            <option value="twitter">Twitter / X</option>
+            <option value="facebook">Facebook</option>
+            <option value="blog">Blog / Website</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="pw">
+            <input type="password" id="signupPw" placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+            <button type="button" class="pw-toggle" onclick="togglePw('signupPw',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="str-bars"><div class="str-b" id="s1"></div><div class="str-b" id="s2"></div><div class="str-b" id="s3"></div><div class="str-b" id="s4"></div></div>
+          <div class="str-lbl" id="strLbl"></div>
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <div class="pw">
+            <input type="password" id="confirmPw" placeholder="Repeat your password" autocomplete="new-password"/>
+            <button type="button" class="pw-toggle" onclick="togglePw('confirmPw',this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="msg error" id="signupErr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="signupErrTxt"></span></div>
+        <button type="submit" class="btn-gold" id="signupBtn"><span id="signupBtnTxt">Create Account</span></button>
+        <p class="terms">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+        <p class="switch-p">Have an account? <a onclick="switchTab('login');return false;">Sign in</a></p>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://rpucjtuudbwnzoolseav.supabase.co';
+const SB_KEY='sb_publishable_MQ5fBMcvfOsd9bLb3h9d5Q_wCI0L0lm';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}});
+const ROUTES={customer:'lateh-luxe-dashboard.html',affiliate:'lateh-luxe-dashboard.html',admin:'lateh-luxe-admin.html'};
+let pendingEmail='',resendTID=null;
+
+// ── INIT: check session immediately ──────────────────────────────
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){await onSignedIn(session);return;}
+  document.getElementById('pl').classList.add('gone');
+})();
+
+sb.auth.onAuthStateChange(async(ev,session)=>{
+  if(ev==='SIGNED_IN'&&session) await onSignedIn(session);
+});
+
+async function onSignedIn(session){
+  // Upsert profile row with all signup data
+  await upsertProfile(session.user);
+  saveUser(session.user);
+  redirect(session.user);
+}
+
+async function upsertProfile(su){
+  const m=su.user_metadata||{};
+  await sb.from('profiles').upsert({
+    id:su.id,
+    full_name:m.full_name||[m.first_name,m.last_name].filter(Boolean).join(' ')||su.email,
+    first_name:m.first_name||'',
+    last_name:m.last_name||'',
+    phone:m.phone||'',
+    role:m.role||'customer',
+    tier:m.tier||'Silver',
+    affiliate_status:m.affiliate_status||null,
+    promo_channel:m.promo_channel||null,
+    updated_at:new Date().toISOString()
+  },{onConflict:'id'});
+}
+
+function saveUser(su){
+  const m=su.user_metadata||{};
+  try{localStorage.setItem('ll_user',JSON.stringify({id:su.id,email:su.email,name:m.full_name||[m.first_name,m.last_name].filter(Boolean).join(' ')||su.email,firstName:m.first_name||'',lastName:m.last_name||'',phone:m.phone||'',role:m.role||'customer',tier:m.tier||'Silver',promoChannel:m.promo_channel||'',loggedIn:true}));}catch(_){}
+}
+
+function redirect(su){
+  const role=(su.user_metadata||{}).role||'customer';
+  location.replace(ROUTES[role]||ROUTES.customer);
+}
+
+function buildRedirectUrl(){
+  if(location.protocol==='file:') return SB_URL+'/auth/v1/callback';
+  return location.protocol+'//'+location.host+location.pathname;
+}
+
+// ── TAB SWITCH ───────────────────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('confirmPanel').classList.remove('show');
+  document.getElementById('authTabs').style.display='';
+  clearMsgs();
+  const btns=document.querySelectorAll('.tab-btn');
+  if(tab==='login'){
+    btns[0].classList.add('active');btns[1].classList.remove('active');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('signupForm').classList.add('hidden');
+  }else{
+    btns[1].classList.add('active');btns[0].classList.remove('active');
+    document.getElementById('signupForm').classList.remove('hidden');
+    document.getElementById('loginForm').classList.add('hidden');
+  }
+}
+
+function showConfirm(email){
+  pendingEmail=email;
+  document.getElementById('confirmEmailBadge').textContent=email;
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('signupForm').classList.add('hidden');
+  document.getElementById('authTabs').style.display='none';
+  document.getElementById('confirmPanel').classList.add('show');
+}
+
+function clearMsgs(){
+  ['loginErr','loginOk','signupErr','resendMsg'].forEach(id=>{const el=document.getElementById(id);if(el)el.className=el.className.replace(/\bshow\b/,'').trim();});
+}
+
+function showMsg(id,type,txt){
+  const el=document.getElementById(id);if(!el)return;
+  el.className=`msg ${type} show`;
+  const sp=el.querySelector('span');
+  if(sp)sp.textContent=txt;else el.textContent=txt;
+}
+
+// ── ROLE CHANGE ──────────────────────────────────────────────────
+function onRoleChange(){
+  const role=document.querySelector('input[name="role"]:checked')?.value;
+  document.getElementById('affNote').classList.toggle('show',role==='affiliate');
+  document.getElementById('channelField').style.display=role==='affiliate'?'':'none';
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────
+async function handleLogin(e){
+  e.preventDefault();clearMsgs();
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPw').value;
+  if(!email||!pass){showMsg('loginErr','error','Please enter your email and password.');return;}
+  setBusy('loginBtn','loginBtnTxt','Signing In…',true);
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  setBusy('loginBtn','loginBtnTxt','Sign In',false);
+  if(error){
+    let msg='Incorrect email or password.';
+    if(error.message.includes('Email not confirmed')){msg='Please confirm your email first.';setTimeout(()=>showConfirm(email),1200);}
+    else if(error.message.includes('Too many')){msg='Too many attempts — please wait a moment.';}
+    shake('loginEmail');shake('loginPw');
+    document.getElementById('loginErrTxt').textContent=msg;
+    document.getElementById('loginErr').className='msg error show';
+    return;
+  }
+  document.getElementById('loginOkTxt').textContent='Signed in! Redirecting…';
+  document.getElementById('loginOk').className='msg success show';
+}
+
+// ── SIGNUP ───────────────────────────────────────────────────────
+async function handleSignup(e){
+  e.preventDefault();clearMsgs();
+  const first=document.getElementById('firstName').value.trim();
+  const last=document.getElementById('lastName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const phone=document.getElementById('signupPhone').value.trim();
+  const pass=document.getElementById('signupPw').value;
+  const conf=document.getElementById('confirmPw').value;
+  const role=document.querySelector('input[name="role"]:checked')?.value||'customer';
+  const channel=document.getElementById('promoChannel')?.value||'';
+
+  const err=(msg,fld)=>{document.getElementById('signupErrTxt').textContent=msg;document.getElementById('signupErr').className='msg error show';if(fld)shake(fld);};
+  if(!first||!last){err('Please enter your first and last name.');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err('Please enter a valid email address.','signupEmail');return;}
+  if(!phone){err('Please enter your phone number.');return;}
+  if(role==='affiliate'&&!channel){err('Please select your main promotion channel.');return;}
+  if(pass.length<8){err('Password must be at least 8 characters.');return;}
+  if(pass!==conf){err('Passwords do not match.','confirmPw');return;}
+
+  setBusy('signupBtn','signupBtnTxt','Creating Account…',true);
+
+  const{data,error}=await sb.auth.signUp({
+    email,password:pass,
+    options:{
+      emailRedirectTo:buildRedirectUrl(),
+      data:{
+        first_name:first,last_name:last,
+        full_name:`${first} ${last}`,
+        phone,role,tier:'Silver',
+        promo_channel:channel||null,
+        affiliate_status:role==='affiliate'?'pending':null,
+      }
+    }
+  });
+
+  setBusy('signupBtn','signupBtnTxt','Create Account',false);
+
+  if(error){
+    let msg=error.message;
+    if(msg.includes('already registered')||msg.includes('User already registered'))msg='An account with this email already exists. Try signing in.';
+    else if(msg.includes('rate limit')||msg.includes('over_email'))msg='Too many attempts. Please wait a minute and try again.';
+    document.getElementById('signupErrTxt').textContent=msg;
+    document.getElementById('signupErr').className='msg error show';
+    return;
+  }
+
+  if(data.session){redirect(data.user);}
+  else{showConfirm(email);}
+}
+
+// ── FORGOT PASSWORD ──────────────────────────────────────────────
+async function showForgot(e){
+  e&&e.preventDefault();clearMsgs();
+  const email=document.getElementById('loginEmail').value.trim();
+  if(!email){document.getElementById('loginErrTxt').textContent='Enter your email address above first.';document.getElementById('loginErr').className='msg error show';shake('loginEmail');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:buildRedirectUrl()});
+  if(error){document.getElementById('loginErrTxt').textContent='Could not send reset email. Try again.';document.getElementById('loginErr').className='msg error show';}
+  else{document.getElementById('loginOkTxt').textContent=`Password reset link sent to ${email}`;document.getElementById('loginOk').className='msg success show';}
+}
+
+// ── RESEND CONFIRMATION ──────────────────────────────────────────
+async function resendEmail(){
+  if(!pendingEmail)return;
+  const btn=document.getElementById('resendBtn');
+  const timerEl=document.getElementById('resendTimer');
+  btn.disabled=true;showMsg('resendMsg','info','Sending…');
+  const{error}=await sb.auth.resend({type:'signup',email:pendingEmail});
+  if(error){showMsg('resendMsg','error',error.message.includes('rate')?'Please wait before requesting another email.':'Failed to resend. Try again shortly.');btn.disabled=false;}
+  else{
+    showMsg('resendMsg','success',`Confirmation email resent to ${pendingEmail}`);
+    let s=60;timerEl.style.display='';timerEl.textContent=`(${s}s)`;
+    clearInterval(resendTID);
+    resendTID=setInterval(()=>{s--;timerEl.textContent=`(${s}s)`;if(s<=0){clearInterval(resendTID);btn.disabled=false;timerEl.style.display='none';}},1000);
+  }
+}
+
+// ── GUEST ────────────────────────────────────────────────────────
+function continueAsGuest(){
+  try{localStorage.setItem('ll_user',JSON.stringify({name:'Guest',role:'customer',tier:'',loggedIn:false,isGuest:true}));}catch(_){}
+  location.href='lateh-luxe-dashboard.html';
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function togglePw(id,btn){const inp=document.getElementById(id);inp.type=inp.type==='text'?'password':'text';btn.style.opacity=inp.type==='text'?'.4':'1';}
+
+function checkStrength(v){
+  const segs=[1,2,3,4].map(i=>document.getElementById('s'+i));
+  const lbl=document.getElementById('strLbl');
+  segs.forEach(s=>s.className='str-b');
+  if(!v){lbl.textContent='';return;}
+  let sc=0;
+  if(v.length>=8)sc++;if(/[A-Z]/.test(v))sc++;if(/[0-9]/.test(v))sc++;if(/[^A-Za-z0-9]/.test(v))sc++;
+  const cls=sc<=1?'weak':sc<=2?'fair':'strong';
+  const txt=['','Weak','Fair','Good','Strong'];
+  const clr=['','var(--err)','var(--warn)','var(--ok)','var(--ok)'];
+  for(let i=0;i<sc;i++)segs[i].classList.add(cls);
+  lbl.textContent=txt[sc]||'';lbl.style.color=clr[sc]||'';
+}
+
+function shake(id){const el=document.getElementById(id);if(!el)return;el.style.animation='none';void el.offsetWidth;el.style.animation='shake .38s ease';setTimeout(()=>el.style.animation='',500);}
+
+function setBusy(btnId,txtId,txt,busy){
+  const btn=document.getElementById(btnId);btn.disabled=busy;
+  document.getElementById(txtId).textContent=txt;
+  const existing=btn.querySelector('.spin');
+  if(busy&&!existing){const sp=document.createElement('div');sp.className='spin';btn.appendChild(sp);}
+  else if(!busy&&existing)existing.remove();
+}
+</script>
+</body>
+</html>
